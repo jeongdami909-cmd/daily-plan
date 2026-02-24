@@ -1,35 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Dreamy Scheduler - Redesigned</title>
+<title>Aesthetic Scheduler</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            primary: '#e8306e', // 진한 핑크 (포인트 컬러)
-            secondary: '#fce4ec', // 연한 핑크 (배경, 보조)
-            accent: '#f8bbd0', // 중간 핑크 (강조)
-            neutralBg: '#ffffff', // 흰색 배경
-            neutralText: '#4a4a4a', // 기본 텍스트
-            subtleText: '#9ca3af', // 연한 텍스트
+            primary: '#738276', /* 세련된 뮤트 세이지 그린 */
+            secondary: '#e9ece6', /* 부드러운 오프화이트/그린 */
+            glassBg: 'rgba(255, 255, 255, 0.65)', /* 고급스러운 반투명 화이트 */
+            glassBorder: 'rgba(255, 255, 255, 0.8)',
+            textMain: '#333333',
+            textMuted: '#777777',
           },
           fontFamily: {
-            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            sans: ['Pretendard', '-apple-system', 'sans-serif'],
           },
           borderRadius: {
-            'xl-custom': '1.5rem',
-            '2xl-custom': '2rem',
+            '2xl-custom': '1.5rem',
           },
           boxShadow: {
-            'soft': '0 4px 20px -2px rgba(232, 48, 110, 0.1)',
-            'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.02)',
+            'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.05)',
+            'glass-hover': '0 12px 40px 0 rgba(0, 0, 0, 0.08)',
           }
         }
       }
@@ -37,22 +36,32 @@
 </script>
 <style>
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background: linear-gradient(135deg, #ffffff 0%, #fce4ec 100%); /* 흰색과 연한 핑크 그라데이션 배경 */
-      color: #4a4a4a;
-    }
-    /* 커스텀 스크롤바 */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-thumb { background: #f8bbd0; border-radius: 10px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-
-    .modern-card {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.6);
-        box-shadow: 0 8px 32px 0 rgba(232, 48, 110, 0.05);
+      font-family: 'Pretendard', sans-serif;
+      /* 기본 배경: 차분한 감성의 이미지 (사용자가 변경 가능) */
+      background-image: url('https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1200&q=80');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: #333333;
     }
     
+    /* 스크롤바 세련되게 */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-thumb { background: #b0b8b2; border-radius: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+
+    /* 글래스모피즘(유리 질감) 카드 스타일 */
+    .glass-card {
+        background: var(--glassBg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--glassBorder);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    .glass-card:hover { box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.08); }
+    
+    /* 달력 날짜 스타일 */
     .calendar-day {
       aspect-ratio: 1 / 1;
       display: flex;
@@ -63,170 +72,204 @@
       cursor: pointer;
       border-radius: 9999px;
       transition: all 0.2s ease-in-out;
-      color: #4a4a4a;
+      color: #444;
     }
     .calendar-day:hover:not(.empty-day):not(.selected):not(.today) {
-      background-color: #fce4ec;
-      color: #e8306e;
+      background-color: #e9ece6;
+      color: #738276;
     }
     .calendar-day.empty-day { cursor: default; color: #d1d5db; }
     .calendar-day.today {
-      background-color: #e8306e; color: white; font-weight: 700; box-shadow: 0 2px 8px rgba(232, 48, 110, 0.3);
+      background-color: #738276; color: white; font-weight: 700; box-shadow: 0 4px 10px rgba(115, 130, 118, 0.4);
     }
     .calendar-day.selected:not(.today) {
-      background-color: #ffffff; color: #e8306e; font-weight: 700; border: 2px solid #e8306e;
+      background-color: rgba(255,255,255,0.9); color: #738276; font-weight: 700; border: 2px solid #738276;
     }
+
+    /* 접기/펴기 애니메이션을 위한 클래스 */
+    .collapsible-content {
+      overflow: hidden;
+      transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out;
+    }
+    .toggle-icon { transition: transform 0.3s ease; }
+    .rotated { transform: rotate(180deg); }
 </style>
 </head>
-<body class="min-h-screen pb-24 md:pb-10 px-4 md:px-8 pt-6">
+<body class="min-h-screen pb-24 md:pb-12">
 
-<header class="flex justify-between items-center mb-8">
+<header class="fixed top-0 left-0 w-full p-4 md:p-6 flex justify-between items-center z-50">
     <div>
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight"><span class="text-primary">Daily</span> Glow</h1>
-        <p class="text-sm text-gray-500">나만의 빛나는 하루를 계획하세요.</p>
+        <h1 class="text-2xl font-bold text-gray-800 tracking-tight drop-shadow-md bg-white/40 px-3 py-1 rounded-lg backdrop-blur-sm">
+            <span class="text-primary">Daily</span> Record
+        </h1>
     </div>
-    <label class="cursor-pointer modern-card hover:bg-white/90 text-gray-700 text-xs px-4 py-2 rounded-full transition flex items-center gap-2 shadow-sm">
+    <label class="cursor-pointer bg-white/70 hover:bg-white/95 text-gray-700 text-xs px-4 py-2 rounded-full backdrop-blur-md shadow-sm transition flex items-center gap-2 border border-white/50">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-        <span>배경 변경</span>
+        <span class="font-medium">배경 사진 변경</span>
         <input type="file" id="bg-upload" class="hidden" accept="image/*" onchange="changeBackground(event)">
     </label>
 </header>
-<main class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 max-w-6xl mx-auto">
+
+<div class="h-[35vh] md:h-[45vh] w-full flex items-center justify-center pointer-events-none">
+    </div>
+
+<main class="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-6xl mx-auto px-4 md:px-8 relative z-10">
   
   <div class="md:col-span-5 space-y-6">
       
-      <section class="modern-card p-6 rounded-2xl-custom">
-        <div class="flex justify-between items-center mb-6">
-          <div class="flex items-center gap-4">
-              <button onclick="changeMonth(-1)" class="p-1 rounded-full hover:bg-secondary text-gray-400 hover:text-primary transition">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-              </button>
-              <span id="calendar-month-year" class="text-lg font-bold text-gray-800"></span>
-              <button onclick="changeMonth(1)" class="p-1 rounded-full hover:bg-secondary text-gray-400 hover:text-primary transition">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-              </button>
-          </div>
-          <button onclick="goToToday()" class="text-xs font-medium text-primary bg-secondary px-3 py-1.5 rounded-full hover:bg-accent/20 transition">오늘</button>
+      <section class="glass-card p-5 md:p-6 rounded-2xl-custom">
+        <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="toggleSection('calendar-content', 'calendar-icon')">
+            <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                Monthly
+                <svg id="calendar-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+            </h2>
+            <button onclick="event.stopPropagation(); goToToday()" class="text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-full hover:bg-primary hover:text-white transition">오늘</button>
         </div>
         
-        <div class="grid grid-cols-7 gap-2 mb-2 text-center">
-            <div class="text-xs font-semibold text-primary uppercase tracking-wider">일</div>
-            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">월</div>
-            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">화</div>
-            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">수</div>
-            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">목</div>
-            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">금</div>
-            <div class="text-xs font-semibold text-primary uppercase tracking-wider">토</div>
+        <div id="calendar-content" class="collapsible-content max-h-[500px] opacity-100">
+            <div class="flex justify-between items-center mb-4 px-2">
+                <button onclick="changeMonth(-1)" class="p-1.5 rounded-full hover:bg-white/50 text-gray-500 hover:text-primary transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <span id="calendar-month-year" class="text-base font-bold text-gray-800 tracking-wide"></span>
+                <button onclick="changeMonth(1)" class="p-1.5 rounded-full hover:bg-white/50 text-gray-500 hover:text-primary transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-7 gap-1 md:gap-2 mb-2 text-center">
+                <div class="text-[11px] font-bold text-primary uppercase">일</div>
+                <div class="text-[11px] font-bold text-gray-400 uppercase">월</div>
+                <div class="text-[11px] font-bold text-gray-400 uppercase">화</div>
+                <div class="text-[11px] font-bold text-gray-400 uppercase">수</div>
+                <div class="text-[11px] font-bold text-gray-400 uppercase">목</div>
+                <div class="text-[11px] font-bold text-gray-400 uppercase">금</div>
+                <div class="text-[11px] font-bold text-primary uppercase">토</div>
+            </div>
+            <div class="grid grid-cols-7 gap-1 md:gap-2" id="calendar-grid">
+              </div>
         </div>
-        <div class="grid grid-cols-7 gap-2" id="calendar-grid">
-          </div>
       </section>
 
-      <section class="modern-card p-6 rounded-2xl-custom">
-        <div class="flex justify-between items-center mb-4">
-          <h2 id="focus-title" class="text-lg font-bold text-gray-800">오늘의 할 일</h2>
-          <button onclick="addTask()" class="flex items-center gap-1 text-xs font-semibold text-white bg-primary px-4 py-2 rounded-full shadow-soft hover:bg-primary/90 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-            추가
-        </button>
+      <section class="glass-card p-5 md:p-6 rounded-2xl-custom">
+        <div class="flex justify-between items-center cursor-pointer" onclick="toggleSection('todo-content', 'todo-icon')">
+          <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <span id="focus-title">오늘의 할 일</span>
+              <svg id="todo-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+          </h2>
+          <button onclick="event.stopPropagation(); addTask()" class="flex items-center gap-1 text-xs font-semibold text-white bg-primary px-3 py-1.5 rounded-full shadow-sm hover:bg-primary/90 transition">
+            + 추가
+          </button>
         </div>
         
-        <div id="task-list" class="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-          </div>
+        <div id="todo-content" class="collapsible-content max-h-[1000px] opacity-100 mt-4">
+            <div id="task-list" class="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+              </div>
+        </div>
       </section>
-
   </div>
+
   <div class="md:col-span-7">
-      <section class="modern-card p-6 rounded-2xl-custom h-full">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-lg font-bold text-gray-800">주간 저널</h2>
-          <span class="text-sm text-gray-500">이번 주 기록</span>
+      <section class="glass-card p-5 md:p-6 rounded-2xl-custom">
+        <div class="flex justify-between items-center cursor-pointer" onclick="toggleSection('journal-content', 'journal-icon')">
+          <div class="flex items-center gap-2">
+              <h2 class="text-lg font-bold text-gray-800">주간 저널</h2>
+              <svg id="journal-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+          </div>
+          <span class="text-xs font-medium text-gray-500 bg-white/50 px-2 py-1 rounded-md">이번 주 기록</span>
         </div>
-        <div class="flex md:grid md:grid-cols-1 gap-4 overflow-x-auto md:overflow-visible pb-4 md:pb-0 custom-scrollbar snap-x">
-            <div id="journal-list" class="flex md:flex-col gap-4 w-full">
-                 </div>
+        
+        <div id="journal-content" class="collapsible-content max-h-[2000px] opacity-100 mt-5">
+            <div class="flex md:grid md:grid-cols-1 gap-4 overflow-x-auto md:overflow-visible pb-4 md:pb-0 custom-scrollbar snap-x">
+                <div id="journal-list" class="flex md:flex-col gap-4 w-full">
+                     </div>
+            </div>
         </div>
       </section>
   </div>
-  </main>
 
-<nav class="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md modern-card rounded-full p-2 flex justify-around items-center shadow-lg z-40">
-  <button class="p-3 text-primary hover:bg-secondary rounded-full transition" onclick="goToToday()" title="오늘로 이동">
+</main>
+
+<nav class="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md glass-card rounded-full p-2 flex justify-around items-center z-40 border border-white/60">
+  <button class="p-3 text-primary hover:bg-white/50 rounded-full transition" onclick="goToToday()" title="오늘로 이동">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
   </button>
-  <button onclick="addTask()" class="bg-primary text-white p-4 rounded-full shadow-soft transform -translate-y-3 hover:scale-105 transition border-4 border-white" title="새 일정 작성">
+  <button onclick="addTask()" class="bg-primary text-white p-4 rounded-full shadow-lg transform -translate-y-3 hover:scale-105 transition border-2 border-white/50" title="새 일정 작성">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
   </button>
-  <button class="p-3 text-gray-400 hover:text-primary hover:bg-secondary rounded-full transition" title="주간 저널로 이동 (구현 예정)">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+  <button class="p-3 text-gray-500 hover:text-primary hover:bg-white/50 rounded-full transition" onclick="window.scrollTo(0,0)">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
   </button>
 </nav>
-<div id="taskModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
-  <div class="bg-white p-8 rounded-2xl-custom w-full max-w-md shadow-2xl transform transition-all scale-95 opacity-0" id="modalContent">
-    <div class="flex justify-between items-center mb-6">
-        <h3 id="modalTitle" class="text-xl font-bold text-gray-800">일정 추가</h3>
-        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+
+<div id="taskModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
+  <div class="bg-white/95 backdrop-blur-xl p-6 md:p-8 rounded-2xl-custom w-full max-w-md shadow-2xl transform transition-all scale-95 opacity-0 border border-white" id="modalContent">
+    <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+        <h3 id="modalTitle" class="text-lg md:text-xl font-bold text-gray-800">일정 추가</h3>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition bg-gray-50 p-1.5 rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
     </div>
     <input type="hidden" id="modalTaskId">
     
     <div class="mb-5">
-      <label for="modalTime" class="block text-sm font-semibold text-gray-600 mb-2">시간 (선택)</label>
-      <div class="relative">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          </div>
-          <input type="text" id="modalTime" class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition" placeholder="예: 오전 10:00">
-      </div>
+      <label class="block text-xs font-bold text-gray-500 mb-2">시간 (선택)</label>
+      <input type="text" id="modalTime" class="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition" placeholder="예: 오전 10:00">
     </div>
     
     <div class="mb-8">
-      <label for="modalTitleInput" class="block text-sm font-semibold text-gray-600 mb-2">내용</label>
-      <textarea id="modalTitleInput" rows="4" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition resize-none" placeholder="할 일을 입력하세요..."></textarea>
+      <label class="block text-xs font-bold text-gray-500 mb-2">내용</label>
+      <textarea id="modalTitleInput" rows="4" class="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition resize-none" placeholder="어떤 일정이 있나요?"></textarea>
     </div>
     
     <div class="flex gap-3 justify-end">
-      <button onclick="closeModal()" class="px-6 py-3 text-sm font-semibold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition">취소</button>
-      <button onclick="saveTaskFromModal()" class="px-6 py-3 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary/90 shadow-soft transition flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-        저장
-      </button>
+      <button onclick="closeModal()" class="px-5 py-2.5 text-sm font-semibold text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200 transition">취소</button>
+      <button onclick="saveTaskFromModal()" class="px-5 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-opacity-90 transition shadow-md">저장하기</button>
     </div>
   </div>
 </div>
 
 <script>
-  // === 데이터 및 설정 ===
+  // === 데이터 설정 ===
   let tasks = JSON.parse(localStorage.getItem('dreamy_tasks')) || {};
   let journal = JSON.parse(localStorage.getItem('dreamy_journal')) || {};
   const monthNames = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
   let currentDate = new Date();
   let selectedDate = new Date();
 
-  // === 배경 변경 ===
+  // === 배경 사진 로드 ===
+  const savedBg = localStorage.getItem('dreamy_bg');
+  if(savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
+
   function changeBackground(event) {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = function(e) {
         document.body.style.backgroundImage = `url('${e.target.result}')`;
-        document.body.style.backgroundSize = 'cover';
-        document.body.style.backgroundPosition = 'center';
-        document.body.style.backgroundAttachment = 'fixed';
         localStorage.setItem('dreamy_bg', e.target.result);
       };
       reader.readAsDataURL(file);
     }
   }
-  const savedBg = localStorage.getItem('dreamy_bg');
-  if(savedBg) {
-      document.body.style.backgroundImage = `url('${savedBg}')`;
-      document.body.style.backgroundSize = 'cover';
-      document.body.style.backgroundPosition = 'center';
-       document.body.style.backgroundAttachment = 'fixed';
-  }
 
+  // === 섹션 접기/펴기 (아코디언 기능) ===
+  function toggleSection(contentId, iconId) {
+    const content = document.getElementById(contentId);
+    const icon = document.getElementById(iconId);
+    
+    if (content.style.maxHeight === '0px') {
+        content.style.maxHeight = '2000px';
+        content.style.opacity = '1';
+        content.style.marginTop = '1rem';
+        icon.classList.remove('rotated');
+    } else {
+        content.style.maxHeight = '0px';
+        content.style.opacity = '0';
+        content.style.marginTop = '0';
+        icon.classList.add('rotated');
+    }
+  }
 
   // === 유틸리티 ===
   function formatDateKey(date) {
@@ -264,6 +307,12 @@
   function selectDate(year, month, day) {
     selectedDate = new Date(year, month, day);
     renderCalendar();
+    
+    // 날짜 선택 시 접혀있던 할 일 목록이 자동으로 펴짐
+    document.getElementById('todo-content').style.maxHeight = '2000px';
+    document.getElementById('todo-content').style.opacity = '1';
+    document.getElementById('todo-icon').classList.remove('rotated');
+    
     renderTasks();
   }
   function goToToday() {
@@ -279,14 +328,14 @@
     const dayTasks = tasks[dateKey] || [];
     const listEl = document.getElementById('task-list');
     const isToday = formatDateKey(new Date()) === dateKey;
-    document.getElementById('focus-title').innerText = isToday ? "오늘의 할 일" : `${monthNames[selectedDate.getMonth()]} ${selectedDate.getDate()}일의 할 일`;
+    document.getElementById('focus-title').innerText = isToday ? "오늘의 할 일" : `${monthNames[selectedDate.getMonth()]} ${selectedDate.getDate()}일의 일정`;
 
     if(dayTasks.length === 0) {
       listEl.innerHTML = `
-        <div class="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-gray-200 rounded-2xl text-gray-400 cursor-pointer hover:border-primary/50 hover:text-primary transition group" onclick="addTask()">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mb-3 text-gray-300 group-hover:text-primary/70 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
-            <p class="text-sm font-medium">등록된 할 일이 없습니다.</p>
-            <p class="text-xs mt-1">새로운 일정을 추가해보세요!</p>
+        <div class="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-gray-200/60 rounded-xl bg-white/40 text-gray-400 cursor-pointer hover:border-primary/50 hover:bg-white/60 transition group" onclick="addTask()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-2 text-gray-300 group-hover:text-primary/70 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+            <p class="text-xs font-semibold">등록된 일정이 없습니다.</p>
+            <p class="text-[10px] mt-1 text-gray-400">여기를 눌러 일정을 추가하세요</p>
         </div>`;
       return;
     }
@@ -294,17 +343,17 @@
     let html = '';
     dayTasks.forEach(task => {
       html += `
-      <div class="group bg-white p-4 rounded-xl shadow-inner-soft flex items-center justify-between border border-gray-100 hover:border-primary/30 transition">
+      <div class="group bg-white/80 p-4 rounded-xl shadow-sm flex items-center justify-between border border-white hover:border-primary/30 transition">
         <div class="flex items-start gap-3 flex-1 overflow-hidden">
-            <div class="mt-0.5">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+            <div class="mt-0.5 text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
             </div>
             <div class="flex-1">
-                ${task.time ? `<p class="text-xs font-semibold text-primary mb-0.5 flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>${task.time}</p>` : ''}
-                <p class="text-sm font-medium text-gray-700 whitespace-pre-wrap leading-relaxed">${task.title}</p>
+                ${task.time ? `<p class="text-[10px] font-bold text-primary mb-0.5">${task.time}</p>` : ''}
+                <p class="text-sm font-medium text-gray-800 whitespace-pre-wrap leading-snug">${task.title}</p>
             </div>
         </div>
-        <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div class="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           <button onclick="editTask(${task.id})" class="p-1.5 text-gray-400 hover:text-primary hover:bg-secondary rounded-lg transition" title="수정">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
           </button>
@@ -317,9 +366,10 @@
     listEl.innerHTML = html;
   }
 
-  // === 모달 관련 ===
+  // === 모달창 로직 ===
   const modal = document.getElementById('taskModal');
   const modalContent = document.getElementById('modalContent');
+  
   function openModal(id = null) {
     document.getElementById('modalTaskId').value = id || '';
     modal.classList.remove('hidden');
@@ -328,22 +378,24 @@
         modalContent.classList.remove('scale-95', 'opacity-0');
         modalContent.classList.add('scale-100', 'opacity-100');
     }, 10);
-    document.getElementById('modalTitleInput').focus();
   }
+  
   function closeModal() {
     modalContent.classList.remove('scale-100', 'opacity-100');
     modalContent.classList.add('scale-95', 'opacity-0');
     setTimeout(() => {
         modal.classList.add('hidden');
         modal.classList.remove('flex');
-        document.getElementById('modalTitleInput').value = '';
-        document.getElementById('modalTime').value = '';
     }, 300);
   }
+  
   function addTask() {
-    document.getElementById('modalTitle').innerText = '새 일정 추가';
+    document.getElementById('modalTitle').innerText = '일정 추가';
+    document.getElementById('modalTitleInput').value = '';
+    document.getElementById('modalTime').value = '';
     openModal();
   }
+  
   function editTask(id) {
     const dateKey = formatDateKey(selectedDate);
     const task = tasks[dateKey].find(t => t.id === id);
@@ -353,23 +405,29 @@
     document.getElementById('modalTime').value = task.time;
     openModal(id);
   }
+  
   function saveTaskFromModal() {
     const title = document.getElementById('modalTitleInput').value.trim();
     const time = document.getElementById('modalTime').value.trim();
     const editId = document.getElementById('modalTaskId').value;
+    
     if (!title) { alert("내용을 입력해주세요!"); return; }
+    
     const dateKey = formatDateKey(selectedDate);
     if (!tasks[dateKey]) tasks[dateKey] = [];
+    
     if (editId) {
       const taskIndex = tasks[dateKey].findIndex(t => t.id == editId);
       if(taskIndex > -1) { tasks[dateKey][taskIndex].title = title; tasks[dateKey][taskIndex].time = time; }
     } else {
       tasks[dateKey].push({ id: Date.now(), title, time });
     }
+    
     localStorage.setItem('dreamy_tasks', JSON.stringify(tasks));
     closeModal();
     renderTasks();
   }
+  
   function deleteTask(id) {
     if (!confirm("정말 삭제하시겠습니까?")) return;
     const dateKey = formatDateKey(selectedDate);
@@ -381,50 +439,52 @@
   // === 주간 저널 렌더링 ===
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const weekDaysKor = ['월', '화', '수', '목', '금', '토', '일'];
+  
   function renderJournal() {
     let html = '';
     weekDays.forEach((day, index) => {
       const entry = journal[day];
       const dayKor = weekDaysKor[index];
-      const isWeekend = day === 'Sat' || day === 'Sun';
-      const dayColorClass = day === 'Sun' ? 'text-red-400' : (day === 'Sat' ? 'text-blue-400' : 'text-gray-500');
+      const dayColorClass = day === 'Sun' ? 'text-red-400' : (day === 'Sat' ? 'text-blue-400' : 'text-primary');
       
       if (entry) {
         html += `
-        <div class="group bg-white p-5 rounded-xl border border-pink-100 shadow-sm hover:shadow-md transition relative min-w-[280px] md:min-w-0 snap-center flex flex-col">
-          <div class="flex justify-between items-center mb-3 pb-2 border-b border-pink-50">
-            <span class="text-sm font-bold ${dayColorClass}">${dayKor}요일</span>
-            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onclick="editJournal('${day}')" class="p-1.5 text-gray-400 hover:text-primary hover:bg-secondary rounded-lg transition" title="수정">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+        <div class="group bg-white/90 p-5 rounded-xl border border-white shadow-sm hover:shadow-md transition relative min-w-[280px] md:min-w-0 snap-center flex flex-col">
+          <div class="flex justify-between items-center mb-3 pb-2 border-b border-gray-100">
+            <span class="text-xs font-bold ${dayColorClass}">${dayKor}요일</span>
+            <div class="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+              <button onclick="editJournal('${day}')" class="p-1.5 text-gray-400 hover:text-primary bg-gray-50 rounded-lg transition" title="수정">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
               </button>
-              <button onclick="deleteJournal('${day}')" class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="삭제">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              <button onclick="deleteJournal('${day}')" class="p-1.5 text-gray-400 hover:text-red-500 bg-gray-50 rounded-lg transition" title="삭제">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
               </button>
             </div>
           </div>
-          <p class="text-sm text-gray-700 italic leading-relaxed whitespace-pre-wrap flex-1">${entry}</p>
+          <p class="text-sm font-medium text-gray-700 leading-relaxed whitespace-pre-wrap flex-1">${entry}</p>
         </div>`;
       } else {
         html += `
-        <div onclick="editJournal('${day}')" class="bg-white/50 p-5 rounded-xl border-2 border-dashed border-pink-200 cursor-pointer hover:bg-white hover:border-primary/50 transition flex flex-col items-center justify-center gap-3 min-w-[280px] md:min-w-0 snap-center py-8 group">
-          <span class="text-sm font-bold ${dayColorClass} group-hover:text-primary transition">${dayKor}요일</span>
-          <span class="text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-full group-hover:bg-primary group-hover:text-white transition">+ 일기 쓰기</span>
+        <div onclick="editJournal('${day}')" class="bg-white/40 p-5 rounded-xl border-2 border-dashed border-gray-200 cursor-pointer hover:bg-white/80 hover:border-primary/50 transition flex flex-col items-center justify-center gap-2 min-w-[280px] md:min-w-0 snap-center py-6 group">
+          <span class="text-xs font-bold text-gray-500 group-hover:text-primary transition">${dayKor}요일</span>
+          <span class="text-[11px] font-bold text-gray-400 bg-white/50 px-3 py-1.5 rounded-full group-hover:bg-primary group-hover:text-white transition">+ 일기 쓰기</span>
         </div>`;
       }
     });
     document.getElementById('journal-list').innerHTML = html;
   }
+  
   function editJournal(day) {
     const currentEntry = journal[day] || "";
     const dayKor = weekDaysKor[weekDays.indexOf(day)];
-    const newEntry = prompt(`[${dayKor}요일] 오늘의 일기를 작성해주세요.`, currentEntry);
+    const newEntry = prompt(`[${dayKor}요일] 일기를 작성해주세요.`, currentEntry);
     if (newEntry === null) return; 
     if (newEntry.trim() === "") delete journal[day]; 
     else journal[day] = newEntry;
     localStorage.setItem('dreamy_journal', JSON.stringify(journal));
     renderJournal();
   }
+  
   function deleteJournal(day) {
     const dayKor = weekDaysKor[weekDays.indexOf(day)];
     if (!confirm(`${dayKor}요일의 일기를 삭제하시겠습니까?`)) return;
