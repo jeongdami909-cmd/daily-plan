@@ -15,7 +15,7 @@
           colors: {
             primary: '#738276', 
             secondary: '#e9ece6', 
-            accent: '#e8306e', /* 기념일/중요 일정 포인트 컬러 */
+            accent: '#e8306e', 
             glassBg: 'rgba(255, 255, 255, 0.75)', 
             glassBorder: 'rgba(255, 255, 255, 0.9)',
           },
@@ -53,7 +53,6 @@
     .calendar-day.today { background-color: #738276; color: white; font-weight: 700; }
     .calendar-day.selected:not(.today) { background-color: rgba(255,255,255,0.9); color: #738276; font-weight: 700; border: 2px solid #738276; }
 
-    /* 💡 달력 속성: 기념일 텍스트 & 일정 점(Dot) */
     .cal-anniversary {
         font-size: 0.55rem; font-weight: 700; color: #e8306e; 
         width: 90%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -97,18 +96,28 @@
   
   <div class="md:col-span-5 space-y-6">
       
+      <section class="glass-card p-5 md:p-6 rounded-2xl-custom">
+        <div class="flex justify-between items-center cursor-pointer" onclick="toggleSection('topboard-content', 'topboard-icon')">
+          <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+              📌 상단 메모
+              <svg id="topboard-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+          </h2>
+          <button onclick="event.stopPropagation(); addTopBoardItem()" class="flex items-center gap-1 text-[11px] font-semibold text-white bg-primary px-3 py-1.5 rounded-full shadow-sm hover:bg-primary/90 transition">+ 메모 추가</button>
+        </div>
+        
+        <div id="topboard-content" class="collapsible-content max-h-[500px] opacity-100 mt-4">
+            <div id="topboard-list" class="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar"></div>
+        </div>
+      </section>
+
       <section class="glass-card p-5 md:p-6 rounded-2xl-custom relative">
         <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="toggleSection('calendar-content', 'calendar-icon')">
             <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
                 Monthly <svg id="calendar-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
             </h2>
             <div class="flex gap-2">
-                <button onclick="event.stopPropagation(); openTimelineModal()" class="flex items-center gap-1 text-[11px] font-semibold text-gray-700 bg-white px-2 py-1.5 rounded-full shadow-sm hover:bg-gray-100 transition border border-gray-200">
-                    🗺️ 길잡이
-                </button>
-                <button onclick="event.stopPropagation(); goToToday()" class="text-[11px] font-semibold text-white bg-primary px-3 py-1.5 rounded-full hover:bg-primary/90 transition shadow-sm">
-                    오늘
-                </button>
+                <button onclick="event.stopPropagation(); openTimelineModal()" class="flex items-center gap-1 text-[11px] font-semibold text-gray-700 bg-white px-2 py-1.5 rounded-full shadow-sm hover:bg-gray-100 transition border border-gray-200">🗺️ 길잡이</button>
+                <button onclick="event.stopPropagation(); goToToday()" class="text-[11px] font-semibold text-white bg-primary px-3 py-1.5 rounded-full hover:bg-primary/90 transition shadow-sm">오늘</button>
             </div>
         </div>
         
@@ -140,7 +149,7 @@
           </h2>
           <div class="flex gap-2">
               <button onclick="event.stopPropagation(); openStickerModal()" class="flex items-center gap-1 text-[11px] font-semibold text-gray-700 bg-white px-2 py-1.5 rounded-full shadow-sm hover:bg-gray-100 transition border border-gray-200">✨ 다꾸</button>
-              <button onclick="event.stopPropagation(); addTask()" class="flex items-center gap-1 text-[11px] font-semibold text-white bg-primary px-3 py-1.5 rounded-full shadow-sm hover:bg-primary/90 transition">+ 추가</button>
+              <button onclick="event.stopPropagation(); addTask()" class="flex items-center gap-1 text-[11px] font-semibold text-white bg-primary px-3 py-1.5 rounded-full shadow-sm hover:bg-primary/90 transition">+ 일정 추가</button>
           </div>
         </div>
         
@@ -167,14 +176,28 @@
   </div>
 </main>
 
+<div id="topBoardModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
+    <div class="bg-white/95 backdrop-blur-xl p-6 md:p-8 rounded-2xl-custom w-full max-w-sm shadow-2xl border border-white relative">
+        <button onclick="closeTbModal()" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 bg-gray-50 p-1.5 rounded-full">✕</button>
+        <h3 id="tbModalTitle" class="text-lg font-bold text-gray-800 mb-6 border-b border-gray-100 pb-4">상단 메모 추가</h3>
+        <input type="hidden" id="tbModalId">
+        <div class="mb-6">
+            <label class="block text-xs font-bold text-gray-500 mb-2">메모/목표 내용</label>
+            <textarea id="tbModalContent" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-1 focus:ring-primary resize-none text-sm" placeholder="목표나 공지사항을 적어주세요."></textarea>
+        </div>
+        <div class="flex gap-3 justify-end">
+            <button onclick="closeTbModal()" class="px-5 py-2.5 text-sm font-semibold text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200">취소</button>
+            <button onclick="saveTbFromModal()" class="px-5 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-opacity-90">저장하기</button>
+        </div>
+    </div>
+</div>
+
 <div id="timelineModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
     <div class="bg-white/95 backdrop-blur-xl p-6 rounded-2xl-custom w-full max-w-md shadow-2xl border border-white relative max-h-[80vh] flex flex-col">
         <button onclick="closeTimelineModal()" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600 bg-gray-50 p-1.5 rounded-full">✕</button>
         <h3 class="text-lg font-bold text-gray-800 mb-2">🗺️ 전체 일정 길잡이</h3>
         <p class="text-xs text-gray-500 mb-4 pb-4 border-b border-gray-100">과거부터 미래까지, 등록된 모든 일정을 한눈에 확인하세요.</p>
-        
-        <div id="timeline-list" class="overflow-y-auto flex-1 space-y-4 pr-2 custom-scrollbar">
-            </div>
+        <div id="timeline-list" class="overflow-y-auto flex-1 space-y-4 pr-2 custom-scrollbar"></div>
     </div>
 </div>
 
@@ -263,6 +286,7 @@
 </div>
 
 <script>
+  let topBoards = JSON.parse(localStorage.getItem('dreamy_topboard')) || [];
   let tasks = JSON.parse(localStorage.getItem('dreamy_tasks_v3')) || {};
   let freeJournals = JSON.parse(localStorage.getItem('dreamy_journal_v2')) || []; 
   let stickers = JSON.parse(localStorage.getItem('dreamy_stickers')) || {};
@@ -271,7 +295,6 @@
   let currentDate = new Date();
   let selectedDate = new Date();
 
-  // 배경 세팅
   const savedBg = localStorage.getItem('dreamy_bg');
   if(savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
   function changeBackground(event) {
@@ -290,7 +313,64 @@
   }
   function formatDateKey(date) { return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`; }
 
-  // === 💡 달력 렌더링 (기념일 텍스트 및 점 연결) ===
+  // === 💡 상단 메모 게시판 로직 ===
+  function renderTopBoards() {
+      const listEl = document.getElementById('topboard-list');
+      if (topBoards.length === 0) {
+          listEl.innerHTML = `<div class="text-center py-5 px-4 text-gray-400 text-sm border border-dashed rounded-xl cursor-pointer hover:bg-gray-50 transition" onclick="addTopBoardItem()">새로운 목표나 메모를 추가해보세요.</div>`;
+          return;
+      }
+      let html = '';
+      topBoards.forEach(tb => {
+          html += `
+          <div class="bg-white/80 p-3.5 rounded-xl shadow-sm flex items-center justify-between border border-gray-100 hover:border-primary/30 transition">
+            <p class="text-sm font-medium text-gray-800 whitespace-pre-wrap flex-1">${tb.content}</p>
+            <div class="flex gap-2 ml-4 shrink-0">
+              <button onclick="editTopBoardItem(${tb.id})" class="px-2 py-1.5 text-xs font-semibold text-gray-500 hover:text-primary bg-white shadow-sm border border-gray-100 rounded transition">수정</button>
+              <button onclick="deleteTopBoardItem(${tb.id})" class="px-2 py-1.5 text-xs font-semibold text-gray-500 hover:text-red-500 bg-white shadow-sm border border-gray-100 rounded transition">삭제</button>
+            </div>
+          </div>`;
+      });
+      listEl.innerHTML = html;
+  }
+  function openTbModal() { document.getElementById('topBoardModal').classList.remove('hidden'); document.getElementById('topBoardModal').classList.add('flex'); }
+  function closeTbModal() { document.getElementById('topBoardModal').classList.add('hidden'); document.getElementById('topBoardModal').classList.remove('flex'); }
+  
+  function addTopBoardItem() {
+      document.getElementById('tbModalTitle').innerText = '상단 메모 추가';
+      document.getElementById('tbModalId').value = '';
+      document.getElementById('tbModalContent').value = '';
+      openTbModal();
+  }
+  function editTopBoardItem(id) {
+      const tb = topBoards.find(t => t.id === id); if (!tb) return;
+      document.getElementById('tbModalTitle').innerText = '상단 메모 수정';
+      document.getElementById('tbModalId').value = tb.id;
+      document.getElementById('tbModalContent').value = tb.content;
+      openTbModal();
+  }
+  function saveTbFromModal() {
+      const content = document.getElementById('tbModalContent').value.trim();
+      const editId = document.getElementById('tbModalId').value;
+      if (!content) { alert('메모 내용을 입력해주세요!'); return; }
+      
+      if (editId) {
+          const idx = topBoards.findIndex(t => t.id == editId);
+          if (idx > -1) topBoards[idx].content = content;
+      } else {
+          topBoards.unshift({ id: Date.now(), content });
+      }
+      localStorage.setItem('dreamy_topboard', JSON.stringify(topBoards));
+      closeTbModal(); renderTopBoards();
+  }
+  function deleteTopBoardItem(id) {
+      if (!confirm("이 메모를 삭제하시겠습니까?")) return;
+      topBoards = topBoards.filter(t => t.id !== id);
+      localStorage.setItem('dreamy_topboard', JSON.stringify(topBoards));
+      renderTopBoards();
+  }
+
+  // === 달력 렌더링 ===
   function renderCalendar() {
     const year = currentDate.getFullYear(); const month = currentDate.getMonth(); const today = new Date();
     document.getElementById('calendar-month-year').innerText = `${year}년 ${monthNames[month]}`;
@@ -307,22 +387,15 @@
 
       html += `<div class="${classes}" onclick="selectDate(${year}, ${month}, ${i})"><span>${i}</span>`;
                  
-      // 일정 및 기념일 마크 표시
       if (tasks[dateKey] && tasks[dateKey].length > 0) {
-          // 달력에 직접 표시(isSpecial)된 일정이 있는지 찾기
           const specialTask = tasks[dateKey].find(t => t.isSpecial);
           const normalTasksCount = tasks[dateKey].filter(t => !t.isSpecial).length;
 
-          if (specialTask) {
-              // 기념일/중요 일정이면 달력에 직접 글씨로 표시! (길잡이 역할)
-              html += `<div class="cal-anniversary">${specialTask.title}</div>`;
-          }
-          
+          if (specialTask) html += `<div class="cal-anniversary">${specialTask.title}</div>`;
           if (normalTasksCount > 0) {
-              // 일반 일정은 개수만큼 회색 점으로 표시
               html += `<div class="cal-dots-container">`;
               for(let j=0; j<Math.min(normalTasksCount, 3); j++) { html += `<div class="task-dot"></div>`; }
-              if(normalTasksCount > 3) html += `<div class="task-dot" style="background:transparent; border:1px solid #a3a3a3;"></div>`; // 3개 초과는 빈 동그라미로 표현
+              if(normalTasksCount > 3) html += `<div class="task-dot" style="background:transparent; border:1px solid #a3a3a3;"></div>`;
               html += `</div>`;
           }
       }
@@ -348,26 +421,20 @@
   }
   function goToToday() { currentDate = new Date(); selectedDate = new Date(); renderCalendar(); renderTasks(); }
 
-  // === 💡 길잡이 (Timeline 모아보기) ===
+  // === 길잡이 (Timeline 모아보기) ===
   function openTimelineModal() {
-      const listEl = document.getElementById('timeline-list');
-      listEl.innerHTML = '';
-      
-      // 저장된 모든 날짜 키를 가져와서 최신 날짜순으로 정렬
+      const listEl = document.getElementById('timeline-list'); listEl.innerHTML = '';
       const allDates = Object.keys(tasks).sort((a, b) => new Date(a) - new Date(b));
       
       let hasTasks = false;
       allDates.forEach(dateKey => {
           if(tasks[dateKey] && tasks[dateKey].length > 0) {
               hasTasks = true;
-              
               let tasksHtml = '';
               tasks[dateKey].forEach(t => {
                   let mark = t.isSpecial ? '🌟 ' : '• ';
                   tasksHtml += `<p class="text-sm text-gray-700 mt-1 pl-2 truncate">${mark}${t.title} <span class="text-[10px] text-gray-400 ml-1">${t.time||''}</span></p>`;
               });
-
-              // 리스트의 날짜를 누르면 즉시 그 날짜로 달력 이동! (완벽한 커넥션)
               html = `
               <div class="p-3 border border-gray-100 rounded-xl hover:bg-gray-50 cursor-pointer transition shadow-sm" onclick="jumpToDate('${dateKey}')">
                   <h4 class="text-xs font-bold text-primary border-b border-gray-200 pb-1 mb-2">${dateKey}</h4>
@@ -376,32 +443,13 @@
               listEl.innerHTML += html;
           }
       });
-
-      if(!hasTasks) {
-          listEl.innerHTML = `<p class="text-center text-sm text-gray-400 py-10">등록된 일정이 없습니다.</p>`;
-      }
-      
-      document.getElementById('timelineModal').classList.remove('hidden');
-      document.getElementById('timelineModal').classList.add('flex');
+      if(!hasTasks) listEl.innerHTML = `<p class="text-center text-sm text-gray-400 py-10">등록된 일정이 없습니다.</p>`;
+      document.getElementById('timelineModal').classList.remove('hidden'); document.getElementById('timelineModal').classList.add('flex');
   }
-
-  function closeTimelineModal() {
-      document.getElementById('timelineModal').classList.add('hidden');
-      document.getElementById('timelineModal').classList.remove('flex');
-  }
-
-  // 타임라인에서 날짜를 누르면 순간이동
+  function closeTimelineModal() { document.getElementById('timelineModal').classList.add('hidden'); document.getElementById('timelineModal').classList.remove('flex'); }
   function jumpToDate(dateKey) {
-      const parts = dateKey.split('-');
-      selectedDate = new Date(parts[0], parts[1]-1, parts[2]);
-      currentDate = new Date(selectedDate); // 달력 화면도 해당 월로 이동
-      
-      closeTimelineModal();
-      renderCalendar();
-      renderTasks();
-      
-      // 모바일 등에서 화면을 위로 살짝 올려줌
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const parts = dateKey.split('-'); selectedDate = new Date(parts[0], parts[1]-1, parts[2]); currentDate = new Date(selectedDate);
+      closeTimelineModal(); renderCalendar(); renderTasks(); window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // 스티커 로직
@@ -431,7 +479,7 @@
       }; reader.readAsDataURL(file);
   }
 
-  // 투두 로직
+  // 💡 투두 로직 (수정/삭제 버튼 항상 보이게 개선)
   function renderTasks() {
     const dateKey = formatDateKey(selectedDate); let dayTasks = tasks[dateKey] || [];
     dayTasks.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
@@ -444,18 +492,17 @@
     }
     let html = '';
     dayTasks.forEach(task => {
-      // 기념일 표시가 된 일정은 박스 테두리를 핑크색으로 강조!
       const borderStyle = task.isSpecial ? 'border-accent/40 bg-accent/5' : 'border-gray-100 bg-white';
       
       html += `
-      <div class="p-4 rounded-xl shadow-sm flex items-center justify-between border ${borderStyle}">
+      <div class="p-4 rounded-xl shadow-sm flex items-center justify-between border ${borderStyle} hover:border-primary/30 transition">
         <div class="flex-1 pr-4">
             ${task.time ? `<p class="text-[11px] font-bold text-primary mb-1">${task.time}</p>` : ''}
             <p class="text-sm font-medium text-gray-800 whitespace-pre-wrap">${task.title}</p>
         </div>
-        <div class="flex gap-2">
-          <button onclick="editTask('${dateKey}', ${task.id})" class="px-2 py-1 text-xs font-semibold text-gray-500 hover:text-primary bg-white/80 shadow-sm border border-gray-100 rounded transition">수정</button>
-          <button onclick="deleteTask('${dateKey}', ${task.id})" class="px-2 py-1 text-xs font-semibold text-gray-500 hover:text-red-500 bg-white/80 shadow-sm border border-gray-100 rounded transition">삭제</button>
+        <div class="flex gap-2 shrink-0">
+          <button onclick="editTask('${dateKey}', ${task.id})" class="px-2 py-1.5 text-xs font-semibold text-gray-500 hover:text-primary bg-white shadow-sm border border-gray-100 rounded transition">수정</button>
+          <button onclick="deleteTask('${dateKey}', ${task.id})" class="px-2 py-1.5 text-xs font-semibold text-gray-500 hover:text-red-500 bg-white shadow-sm border border-gray-100 rounded transition">삭제</button>
         </div>
       </div>`;
     });
@@ -468,49 +515,33 @@
   
   function addTask() { 
       document.getElementById('modalTitle').innerText = '일정 추가'; 
-      document.getElementById('modalTaskId').value = '';
-      document.getElementById('modalOldDate').value = '';
+      document.getElementById('modalTaskId').value = ''; document.getElementById('modalOldDate').value = '';
       document.getElementById('modalDate').value = formatDateKey(selectedDate); 
-      document.getElementById('modalTime').value = '';
-      document.getElementById('modalTitleInput').value = ''; 
-      document.getElementById('modalIsSpecial').checked = false;
-      openModal(); 
+      document.getElementById('modalTime').value = ''; document.getElementById('modalTitleInput').value = ''; 
+      document.getElementById('modalIsSpecial').checked = false; openModal(); 
   }
   
   function editTask(dateKey, id) {
     const task = tasks[dateKey].find(t => t.id === id); if (!task) return;
-    document.getElementById('modalTitle').innerText = '일정 수정'; 
-    document.getElementById('modalTaskId').value = task.id;
-    document.getElementById('modalOldDate').value = dateKey; 
-    document.getElementById('modalDate').value = dateKey;
-    document.getElementById('modalTime').value = task.time || '';
-    document.getElementById('modalTitleInput').value = task.title; 
-    document.getElementById('modalIsSpecial').checked = task.isSpecial || false;
-    openModal();
+    document.getElementById('modalTitle').innerText = '일정 수정'; document.getElementById('modalTaskId').value = task.id;
+    document.getElementById('modalOldDate').value = dateKey; document.getElementById('modalDate').value = dateKey;
+    document.getElementById('modalTime').value = task.time || ''; document.getElementById('modalTitleInput').value = task.title; 
+    document.getElementById('modalIsSpecial').checked = task.isSpecial || false; openModal();
   }
 
   function saveTaskFromModal() {
-    const title = document.getElementById('modalTitleInput').value.trim(); 
-    const time = document.getElementById('modalTime').value; 
-    const newDateKey = document.getElementById('modalDate').value; 
-    const editId = document.getElementById('modalTaskId').value;
-    const oldDateKey = document.getElementById('modalOldDate').value;
-    const isSpecial = document.getElementById('modalIsSpecial').checked;
-    
+    const title = document.getElementById('modalTitleInput').value.trim(); const time = document.getElementById('modalTime').value; 
+    const newDateKey = document.getElementById('modalDate').value; const editId = document.getElementById('modalTaskId').value;
+    const oldDateKey = document.getElementById('modalOldDate').value; const isSpecial = document.getElementById('modalIsSpecial').checked;
     if (!title || !newDateKey) { alert("날짜와 내용을 모두 입력해주세요!"); return; }
     
-    if (editId && oldDateKey && oldDateKey !== newDateKey) {
-        tasks[oldDateKey] = tasks[oldDateKey].filter(t => t.id != editId);
-    }
-
+    if (editId && oldDateKey && oldDateKey !== newDateKey) tasks[oldDateKey] = tasks[oldDateKey].filter(t => t.id != editId);
     if (!tasks[newDateKey]) tasks[newDateKey] = [];
     
     if (editId && oldDateKey === newDateKey) {
       const idx = tasks[newDateKey].findIndex(t => t.id == editId); 
       if(idx > -1) { tasks[newDateKey][idx].title = title; tasks[newDateKey][idx].time = time; tasks[newDateKey][idx].isSpecial = isSpecial; } 
-    } else {
-      tasks[newDateKey].push({ id: Date.now(), title, time, isSpecial }); 
-    }
+    } else tasks[newDateKey].push({ id: Date.now(), title, time, isSpecial }); 
     
     localStorage.setItem('dreamy_tasks_v3', JSON.stringify(tasks)); 
     const parts = newDateKey.split('-'); selectedDate = new Date(parts[0], parts[1]-1, parts[2]);
@@ -523,7 +554,7 @@
     localStorage.setItem('dreamy_tasks_v3', JSON.stringify(tasks)); renderCalendar(); renderTasks();
   }
 
-  // === 자유 기록장 로직 ===
+  // 자유 기록장 로직
   function renderFreeJournals() {
       const listEl = document.getElementById('free-journal-list');
       if (freeJournals.length === 0) {
@@ -536,9 +567,9 @@
           <div class="bg-white/95 p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col">
             <div class="flex justify-between items-center mb-3 pb-2 border-b border-gray-100">
               <span class="text-sm font-bold text-primary">${j.dateStr}</span>
-              <div class="flex gap-2">
-                <button onclick="editJournal(${j.id})" class="px-2 py-1 text-xs font-semibold text-gray-500 hover:text-primary bg-gray-50 border border-gray-100 rounded transition">수정</button>
-                <button onclick="deleteJournal(${j.id})" class="px-2 py-1 text-xs font-semibold text-gray-500 hover:text-red-500 bg-gray-50 border border-gray-100 rounded transition">삭제</button>
+              <div class="flex gap-2 ml-4 shrink-0">
+                <button onclick="editJournal(${j.id})" class="px-2 py-1.5 text-xs font-semibold text-gray-500 hover:text-primary bg-gray-50 border border-gray-100 rounded transition">수정</button>
+                <button onclick="deleteJournal(${j.id})" class="px-2 py-1.5 text-xs font-semibold text-gray-500 hover:text-red-500 bg-gray-50 border border-gray-100 rounded transition">삭제</button>
               </div>
             </div>
             <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">${j.content}</p>
@@ -546,7 +577,6 @@
       });
       listEl.innerHTML = html;
   }
-
   function openJournalModal() { document.getElementById('journalModal').classList.remove('hidden'); document.getElementById('journalModal').classList.add('flex'); }
   function closeJournalModal() { document.getElementById('journalModal').classList.add('hidden'); document.getElementById('journalModal').classList.remove('flex'); }
 
@@ -571,7 +601,8 @@
       freeJournals = freeJournals.filter(j => j.id !== id); localStorage.setItem('dreamy_journal_v2', JSON.stringify(freeJournals)); renderFreeJournals();
   }
 
-  renderCalendar(); renderTasks(); renderFreeJournals();
+  // 초기화
+  renderTopBoards(); renderCalendar(); renderTasks(); renderFreeJournals();
 </script>
 </body>
 </html>
