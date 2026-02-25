@@ -42,34 +42,45 @@
     }
     
     .calendar-day {
-      aspect-ratio: 1 / 1.15; 
       display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-      padding-top: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer;
+      padding: 6px 4px; font-size: 0.9rem; font-weight: 500; cursor: pointer;
       border-radius: 12px; transition: all 0.2s ease-in-out; color: #444;
-      position: relative; overflow: hidden;
+      position: relative; overflow: hidden; border: 1px solid transparent;
     }
+    /* 달력 크기 조절 클래스 */
+    .calendar-day.expanded { min-height: 110px; }
+    .calendar-day.compact { aspect-ratio: 1 / 1.15; }
+
     .calendar-day:hover:not(.empty-day):not(.selected):not(.today) { background-color: #e9ece6; color: #738276; }
     .calendar-day.empty-day { cursor: default; color: #d1d5db; }
     .calendar-day.today { background-color: #738276; color: white; font-weight: 700; }
     .calendar-day.selected:not(.today) { background-color: rgba(255,255,255,0.9); color: #738276; font-weight: 700; border: 2px solid #738276; }
 
     .cal-anniversary {
-        font-size: 0.55rem; font-weight: 700; color: #e8306e; 
-        width: 90%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        margin-top: 2px; background: rgba(232, 48, 110, 0.1); border-radius: 4px; padding: 1px 0;
+        font-size: 0.65rem; font-weight: 700; color: #e8306e; 
+        width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        margin-top: 4px; background: rgba(232, 48, 110, 0.1); border-radius: 4px; padding: 2px 0;
     }
+    .cal-task-label {
+        font-size: 0.65rem; color: #555; background: rgba(0,0,0,0.05); border-radius: 4px; 
+        width: 100%; padding: 2px 4px; margin-top: 2px; text-align: left;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
     .cal-dots-container { display: flex; gap: 2px; margin-top: 3px; justify-content: center; width: 100%; flex-wrap: wrap; padding: 0 4px;}
     .task-dot { width: 5px; height: 5px; background-color: #a3a3a3; border-radius: 50%; }
 
     .sticker-container {
         position: absolute; bottom: 2px; right: 2px; width: 100%; height: auto;
-        display: flex; flex-wrap: wrap-reverse; justify-content: flex-end; gap: -2px; pointer-events: none;
+        display: flex; flex-wrap: wrap-reverse; justify-content: flex-end; gap: -2px; pointer-events: none; z-index: 5;
     }
     .sticker-item {
-        width: 20px; height: 20px; border-radius: 50%; object-fit: cover;
+        width: 24px; height: 24px; border-radius: 50%; object-fit: cover;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2); border: 1.5px solid white; z-index: 10;
-        background: white; display: flex; align-items: center; justify-content: center; font-size: 12px;
+        background: white; display: flex; align-items: center; justify-content: center; font-size: 14px;
+        pointer-events: auto; cursor: pointer; transition: transform 0.2s;
     }
+    .sticker-item:hover { transform: scale(1.2); }
 
     .collapsible-content { overflow: hidden; transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out; }
     .toggle-icon { transition: transform 0.3s ease; }
@@ -89,19 +100,20 @@
 
 <main class="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-6xl mx-auto px-4 md:px-8 relative z-10">
   
-  <div class="md:col-span-5 space-y-6">
+  <div class="md:col-span-6 space-y-6">
+      
       <section class="glass-card p-5 md:p-6 rounded-2xl-custom relative">
         <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="toggleSection('calendar-content', 'calendar-icon')">
             <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
                 Monthly <svg id="calendar-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
             </h2>
             <div class="flex gap-2">
-                <button onclick="event.stopPropagation(); openTimelineModal()" class="flex items-center gap-1 text-[11px] font-semibold text-gray-700 bg-white px-2 py-1.5 rounded-full shadow-sm hover:bg-gray-100 transition border border-gray-200">🗺️ 길잡이</button>
+                <button onclick="event.stopPropagation(); toggleCalendarSize()" class="text-[11px] font-semibold text-gray-700 bg-white px-2 py-1.5 rounded-full shadow-sm border border-gray-200 hover:bg-gray-100 transition">↕️ 크기 조절</button>
                 <button onclick="event.stopPropagation(); goToToday()" class="text-[11px] font-semibold text-white bg-primary px-3 py-1.5 rounded-full hover:bg-primary/90 transition shadow-sm">오늘</button>
             </div>
         </div>
         
-        <div id="calendar-content" class="collapsible-content max-h-[500px] opacity-100">
+        <div id="calendar-content" class="collapsible-content max-h-[1000px] opacity-100">
             <div class="flex justify-between items-center mb-4 px-2">
                 <button onclick="changeMonth(-1)" class="p-1.5 rounded-full hover:bg-white/50 text-gray-500 hover:text-primary transition">❮</button>
                 <span id="calendar-month-year" class="text-base font-bold text-gray-800 tracking-wide"></span>
@@ -121,10 +133,13 @@
         </div>
       </section>
 
+  </div>
+
+  <div class="md:col-span-6 space-y-6">
       <section class="glass-card p-5 md:p-6 rounded-2xl-custom">
         <div class="flex justify-between items-center cursor-pointer" onclick="toggleSection('todo-content', 'todo-icon')">
           <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-              <span id="focus-title">오늘의 할 일</span>
+              <span id="focus-title">선택한 날짜의 일정</span>
               <svg id="todo-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
           </h2>
           <div class="flex gap-2">
@@ -134,12 +149,10 @@
         </div>
         
         <div id="todo-content" class="collapsible-content max-h-[1000px] opacity-100 mt-4">
-            <div id="task-list" class="space-y-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar"></div>
+            <div id="task-list" class="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar"></div>
         </div>
       </section>
-  </div>
 
-  <div class="md:col-span-7">
       <section class="glass-card p-5 md:p-6 rounded-2xl-custom">
         <div class="flex justify-between items-center cursor-pointer" onclick="toggleSection('journal-content', 'journal-icon')">
           <div class="flex items-center gap-2">
@@ -150,20 +163,11 @@
         </div>
         
         <div id="journal-content" class="collapsible-content max-h-[2000px] opacity-100 mt-5">
-            <div id="free-journal-list" class="flex flex-col gap-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-2 w-full"></div>
+            <div id="free-journal-list" class="flex flex-col gap-4 max-h-[500px] overflow-y-auto custom-scrollbar pr-2 w-full"></div>
         </div>
       </section>
   </div>
 </main>
-
-<div id="timelineModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
-    <div class="bg-white/95 backdrop-blur-xl p-6 rounded-2xl-custom w-full max-w-md shadow-2xl border border-white relative max-h-[80vh] flex flex-col">
-        <button onclick="closeTimelineModal()" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600 bg-gray-50 p-1.5 rounded-full">✕</button>
-        <h3 class="text-lg font-bold text-gray-800 mb-2">🗺️ 전체 일정 길잡이</h3>
-        <p class="text-xs text-gray-500 mb-4 pb-4 border-b border-gray-100">과거부터 미래까지, 등록된 모든 일정을 한눈에 확인하세요.</p>
-        <div id="timeline-list" class="overflow-y-auto flex-1 space-y-4 pr-2 custom-scrollbar"></div>
-    </div>
-</div>
 
 <div id="taskModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
   <div class="bg-white/95 backdrop-blur-xl p-6 md:p-8 rounded-2xl-custom w-full max-w-md shadow-2xl border border-white relative">
@@ -175,7 +179,7 @@
     
     <div class="grid grid-cols-2 gap-3 mb-4">
         <div>
-            <label class="block text-xs font-bold text-gray-500 mb-2">날짜 (변경 가능)</label>
+            <label class="block text-xs font-bold text-gray-500 mb-2">날짜</label>
             <input type="date" id="modalDate" class="w-full px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-1 focus:ring-primary text-sm">
         </div>
         <div>
@@ -193,7 +197,7 @@
 
     <div class="mb-8">
       <label class="block text-xs font-bold text-gray-500 mb-2">내용</label>
-      <textarea id="modalTitleInput" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-1 focus:ring-primary resize-none text-sm" placeholder="어떤 일정이 있나요? (기념일이라면 짧게 적어주세요!)"></textarea>
+      <textarea id="modalTitleInput" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-1 focus:ring-primary resize-none text-sm" placeholder="어떤 일정이 있나요?"></textarea>
     </div>
     <div class="flex gap-3 justify-end">
       <button onclick="closeModal()" class="px-5 py-2.5 text-sm font-semibold text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200">취소</button>
@@ -257,6 +261,7 @@
   const monthNames = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
   let currentDate = new Date();
   let selectedDate = new Date();
+  let isCalendarExpanded = true; // 기본으로 달력을 크게 표시
 
   const savedBg = localStorage.getItem('dreamy_bg');
   if(savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
@@ -276,6 +281,11 @@
   }
   function formatDateKey(date) { return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`; }
 
+  function toggleCalendarSize() {
+      isCalendarExpanded = !isCalendarExpanded;
+      renderCalendar();
+  }
+
   // === 달력 렌더링 ===
   function renderCalendar() {
     const year = currentDate.getFullYear(); const month = currentDate.getMonth(); const today = new Date();
@@ -283,34 +293,56 @@
     const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
     
     let html = '';
-    for (let i = 0; i < firstDay; i++) html += `<div class="calendar-day empty-day"></div>`;
+    const sizeClass = isCalendarExpanded ? 'expanded' : 'compact';
+    for (let i = 0; i < firstDay; i++) html += `<div class="calendar-day empty-day ${sizeClass}"></div>`;
     
     for (let i = 1; i <= daysInMonth; i++) {
       const iterDate = new Date(year, month, i); const dateKey = formatDateKey(iterDate);
       const isToday = (i === today.getDate() && month === today.getMonth() && year === today.getFullYear());
       const isSelected = (i === selectedDate.getDate() && month === selectedDate.getMonth() && year === selectedDate.getFullYear());
-      let classes = "calendar-day"; if (isToday) classes += " today"; else if (isSelected) classes += " selected";
+      
+      let classes = `calendar-day ${sizeClass}`; 
+      if (isToday) classes += " today"; 
+      else if (isSelected) classes += " selected";
 
-      html += `<div class="${classes}" onclick="selectDate(${year}, ${month}, ${i})"><span>${i}</span>`;
+      // 날짜 클릭 시 일정 추가 모달 띄우기 (setDateAndAdd)
+      html += `<div class="${classes}" onclick="setDateAndAdd(${year}, ${month}, ${i})">
+                <span class="w-full text-center block pointer-events-none">${i}</span>`;
                  
       if (tasks[dateKey] && tasks[dateKey].length > 0) {
           const specialTask = tasks[dateKey].find(t => t.isSpecial);
-          const normalTasksCount = tasks[dateKey].filter(t => !t.isSpecial).length;
+          const normalTasks = tasks[dateKey].filter(t => !t.isSpecial);
 
-          if (specialTask) html += `<div class="cal-anniversary">${specialTask.title}</div>`;
-          if (normalTasksCount > 0) {
-              html += `<div class="cal-dots-container">`;
-              for(let j=0; j<Math.min(normalTasksCount, 3); j++) { html += `<div class="task-dot"></div>`; }
-              if(normalTasksCount > 3) html += `<div class="task-dot" style="background:transparent; border:1px solid #a3a3a3;"></div>`;
-              html += `</div>`;
+          if (specialTask) {
+              html += `<div class="cal-anniversary pointer-events-none">${specialTask.title}</div>`;
+          }
+          
+          if (normalTasks.length > 0) {
+              if (isCalendarExpanded) {
+                  // 크게 볼 때는 텍스트로 표시
+                  normalTasks.slice(0, 3).forEach(t => {
+                      html += `<div class="cal-task-label pointer-events-none">• ${t.title}</div>`;
+                  });
+                  if(normalTasks.length > 3) html += `<div class="text-[10px] text-gray-400 mt-1 pointer-events-none">+${normalTasks.length - 3}</div>`;
+              } else {
+                  // 작게 볼 때는 점으로 표시
+                  html += `<div class="cal-dots-container pointer-events-none">`;
+                  for(let j=0; j<Math.min(normalTasks.length, 3); j++) { html += `<div class="task-dot"></div>`; }
+                  if(normalTasks.length > 3) html += `<div class="task-dot" style="background:transparent; border:1px solid #a3a3a3;"></div>`;
+                  html += `</div>`;
+              }
           }
       }
                  
       if (stickers[dateKey] && stickers[dateKey].length > 0) {
           html += `<div class="sticker-container">`;
-          stickers[dateKey].forEach(st => {
-              if (st.startsWith('data:image')) html += `<img src="${st}" class="sticker-item">`;
-              else html += `<div class="sticker-item !bg-transparent border-none drop-shadow-md text-[14px]">${st}</div>`;
+          stickers[dateKey].forEach((st, index) => {
+              // 스티커 클릭 시 개별 삭제 함수 호출
+              if (st.startsWith('data:image')) {
+                  html += `<img src="${st}" class="sticker-item" title="클릭해서 떼기" onclick="event.stopPropagation(); removeSticker('${dateKey}', ${index})">`;
+              } else {
+                  html += `<div class="sticker-item !bg-transparent border-none drop-shadow-md text-[16px]" title="클릭해서 떼기" onclick="event.stopPropagation(); removeSticker('${dateKey}', ${index})">${st}</div>`;
+              }
           });
           html += `</div>`;
       }
@@ -320,57 +352,43 @@
   }
 
   function changeMonth(step) { currentDate.setMonth(currentDate.getMonth() + step); renderCalendar(); }
-  function selectDate(year, month, day) {
-    selectedDate = new Date(year, month, day); renderCalendar();
-    document.getElementById('todo-content').style.maxHeight = '2000px'; document.getElementById('todo-content').style.opacity = '1'; document.getElementById('todo-icon').classList.remove('rotated');
+  
+  function setDateAndAdd(year, month, day) {
+    selectedDate = new Date(year, month, day); 
+    renderCalendar();
     renderTasks();
+    // 날짜 선택 후 바로 추가 모달 열기
+    addTask();
   }
+
   function goToToday() { currentDate = new Date(); selectedDate = new Date(); renderCalendar(); renderTasks(); }
 
-  // === 길잡이 (Timeline 모아보기) ===
-  function openTimelineModal() {
-      const listEl = document.getElementById('timeline-list'); listEl.innerHTML = '';
-      const allDates = Object.keys(tasks).sort((a, b) => new Date(a) - new Date(b));
-      
-      let hasTasks = false;
-      allDates.forEach(dateKey => {
-          if(tasks[dateKey] && tasks[dateKey].length > 0) {
-              hasTasks = true;
-              let tasksHtml = '';
-              tasks[dateKey].forEach(t => {
-                  let mark = t.isSpecial ? '🌟 ' : '• ';
-                  tasksHtml += `<p class="text-sm text-gray-700 mt-1 pl-2 truncate">${mark}${t.title} <span class="text-[10px] text-gray-400 ml-1">${t.time||''}</span></p>`;
-              });
-              html = `
-              <div class="p-3 border border-gray-100 rounded-xl hover:bg-gray-50 cursor-pointer transition shadow-sm" onclick="jumpToDate('${dateKey}')">
-                  <h4 class="text-xs font-bold text-primary border-b border-gray-200 pb-1 mb-2">${dateKey}</h4>
-                  ${tasksHtml}
-              </div>`;
-              listEl.innerHTML += html;
-          }
-      });
-      if(!hasTasks) listEl.innerHTML = `<p class="text-center text-sm text-gray-400 py-10">등록된 일정이 없습니다.</p>`;
-      document.getElementById('timelineModal').classList.remove('hidden'); document.getElementById('timelineModal').classList.add('flex');
-  }
-  function closeTimelineModal() { document.getElementById('timelineModal').classList.add('hidden'); document.getElementById('timelineModal').classList.remove('flex'); }
-  function jumpToDate(dateKey) {
-      const parts = dateKey.split('-'); selectedDate = new Date(parts[0], parts[1]-1, parts[2]); currentDate = new Date(selectedDate);
-      closeTimelineModal(); renderCalendar(); renderTasks(); window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  // 스티커 로직
+  // === 스티커 로직 ===
   function openStickerModal() { document.getElementById('stickerModal').classList.remove('hidden'); document.getElementById('stickerModal').classList.add('flex'); }
   function closeStickerModal() { document.getElementById('stickerModal').classList.add('hidden'); document.getElementById('stickerModal').classList.remove('flex'); }
+  
   function saveSticker(stickerValue) {
       const dateKey = formatDateKey(selectedDate); if (!stickers[dateKey]) stickers[dateKey] = [];
       if (stickers[dateKey].length >= 3) stickers[dateKey].shift();
       stickers[dateKey].push(stickerValue); localStorage.setItem('dreamy_stickers', JSON.stringify(stickers));
       closeStickerModal(); renderCalendar();
   }
+  
+  // 개별 스티커 삭제
+  function removeSticker(dateKey, index) {
+      if(stickers[dateKey]) {
+          stickers[dateKey].splice(index, 1);
+          if(stickers[dateKey].length === 0) delete stickers[dateKey];
+          localStorage.setItem('dreamy_stickers', JSON.stringify(stickers));
+          renderCalendar();
+      }
+  }
+
   function clearStickers() {
       const dateKey = formatDateKey(selectedDate); delete stickers[dateKey];
       localStorage.setItem('dreamy_stickers', JSON.stringify(stickers)); closeStickerModal(); renderCalendar();
   }
+
   function handleImageSticker(event) {
       const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
       reader.onload = function(e) {
@@ -385,30 +403,35 @@
       }; reader.readAsDataURL(file);
   }
 
-  // 💡 투두 로직
+  // === 투두 로직 ===
   function renderTasks() {
     const dateKey = formatDateKey(selectedDate); let dayTasks = tasks[dateKey] || [];
     dayTasks.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
     const listEl = document.getElementById('task-list');
-    document.getElementById('focus-title').innerText = (formatDateKey(new Date()) === dateKey) ? "오늘의 할 일" : `${monthNames[selectedDate.getMonth()]} ${selectedDate.getDate()}일의 일정`;
+    
+    // 포커스 타이틀 변경
+    const month = selectedDate.getMonth() + 1;
+    const date = selectedDate.getDate();
+    document.getElementById('focus-title').innerText = (formatDateKey(new Date()) === dateKey) ? "오늘의 할 일" : `${month}월 ${date}일의 일정`;
 
     if(dayTasks.length === 0) {
-      listEl.innerHTML = `<div class="text-center p-6 text-gray-400 text-sm border border-dashed rounded-xl cursor-pointer hover:bg-gray-50 transition" onclick="addTask()">일정이 없습니다. 눌러서 추가하세요.</div>`;
+      listEl.innerHTML = `<div class="text-center p-6 text-gray-400 text-sm border border-dashed rounded-xl cursor-pointer hover:bg-gray-50 transition" onclick="addTask()">일정이 없습니다. 달력 칸을 누르거나 버튼을 눌러 추가하세요.</div>`;
       return;
     }
     let html = '';
     dayTasks.forEach(task => {
       const borderStyle = task.isSpecial ? 'border-accent/40 bg-accent/5' : 'border-gray-100 bg-white';
       
+      // min-w-0 과 shrink-0을 사용하여 글자가 길어져도 버튼 영역이 유지되도록 수정
       html += `
       <div class="p-4 rounded-xl shadow-sm flex items-center justify-between border ${borderStyle} hover:border-primary/30 transition">
-        <div class="flex-1 pr-4">
+        <div class="flex-1 min-w-0 pr-4">
             ${task.time ? `<p class="text-[11px] font-bold text-primary mb-1">${task.time}</p>` : ''}
-            <p class="text-sm font-medium text-gray-800 whitespace-pre-wrap">${task.title}</p>
+            <p class="text-sm font-medium text-gray-800 truncate">${task.title}</p>
         </div>
         <div class="flex gap-2 shrink-0">
-          <button onclick="editTask('${dateKey}', ${task.id})" class="px-2 py-1.5 text-xs font-semibold text-gray-500 hover:text-primary bg-white shadow-sm border border-gray-100 rounded transition">수정</button>
-          <button onclick="deleteTask('${dateKey}', ${task.id})" class="px-2 py-1.5 text-xs font-semibold text-gray-500 hover:text-red-500 bg-white shadow-sm border border-gray-100 rounded transition">삭제</button>
+          <button onclick="editTask('${dateKey}', ${task.id})" class="px-2.5 py-1.5 text-xs font-semibold text-gray-500 hover:text-primary bg-gray-50 border border-gray-100 rounded transition">수정</button>
+          <button onclick="deleteTask('${dateKey}', ${task.id})" class="px-2.5 py-1.5 text-xs font-semibold text-gray-500 hover:text-red-500 bg-gray-50 border border-gray-100 rounded transition">삭제</button>
         </div>
       </div>`;
     });
@@ -460,7 +483,7 @@
     localStorage.setItem('dreamy_tasks_v3', JSON.stringify(tasks)); renderCalendar(); renderTasks();
   }
 
-  // 자유 기록장 로직
+  // === 자유 기록장 로직 ===
   function renderFreeJournals() {
       const listEl = document.getElementById('free-journal-list');
       if (freeJournals.length === 0) {
@@ -474,8 +497,8 @@
             <div class="flex justify-between items-center mb-3 pb-2 border-b border-gray-100">
               <span class="text-sm font-bold text-primary">${j.dateStr}</span>
               <div class="flex gap-2 ml-4 shrink-0">
-                <button onclick="editJournal(${j.id})" class="px-2 py-1.5 text-xs font-semibold text-gray-500 hover:text-primary bg-gray-50 border border-gray-100 rounded transition">수정</button>
-                <button onclick="deleteJournal(${j.id})" class="px-2 py-1.5 text-xs font-semibold text-gray-500 hover:text-red-500 bg-gray-50 border border-gray-100 rounded transition">삭제</button>
+                <button onclick="editJournal(${j.id})" class="px-2.5 py-1.5 text-xs font-semibold text-gray-500 hover:text-primary bg-gray-50 border border-gray-100 rounded transition">수정</button>
+                <button onclick="deleteJournal(${j.id})" class="px-2.5 py-1.5 text-xs font-semibold text-gray-500 hover:text-red-500 bg-gray-50 border border-gray-100 rounded transition">삭제</button>
               </div>
             </div>
             <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">${j.content}</p>
