@@ -78,12 +78,7 @@
 </head>
 <body class="min-h-screen pb-24 md:pb-12">
 
-<header class="fixed top-0 left-0 w-full p-4 md:p-6 flex justify-between items-center z-40">
-    <div>
-        <h1 class="text-2xl font-bold text-gray-800 tracking-tight drop-shadow-md bg-white/40 px-3 py-1 rounded-lg backdrop-blur-sm">
-            <span class="text-primary">Daily</span> Record
-        </h1>
-    </div>
+<header class="fixed top-0 left-0 w-full p-4 md:p-6 flex justify-end items-center z-40">
     <label class="cursor-pointer bg-white/70 hover:bg-white/95 text-gray-700 text-xs px-4 py-2 rounded-full backdrop-blur-md shadow-sm transition flex items-center gap-2 border border-white/50">
         <span>📷 배경 변경</span>
         <input type="file" class="hidden" accept="image/*" onchange="changeBackground(event)">
@@ -95,21 +90,6 @@
 <main class="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-6xl mx-auto px-4 md:px-8 relative z-10">
   
   <div class="md:col-span-5 space-y-6">
-      
-      <section class="glass-card p-5 md:p-6 rounded-2xl-custom">
-        <div class="flex justify-between items-center cursor-pointer" onclick="toggleSection('topboard-content', 'topboard-icon')">
-          <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-              📌 상단 메모
-              <svg id="topboard-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-          </h2>
-          <button onclick="event.stopPropagation(); addTopBoardItem()" class="flex items-center gap-1 text-[11px] font-semibold text-white bg-primary px-3 py-1.5 rounded-full shadow-sm hover:bg-primary/90 transition">+ 메모 추가</button>
-        </div>
-        
-        <div id="topboard-content" class="collapsible-content max-h-[500px] opacity-100 mt-4">
-            <div id="topboard-list" class="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar"></div>
-        </div>
-      </section>
-
       <section class="glass-card p-5 md:p-6 rounded-2xl-custom relative">
         <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="toggleSection('calendar-content', 'calendar-icon')">
             <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
@@ -175,22 +155,6 @@
       </section>
   </div>
 </main>
-
-<div id="topBoardModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
-    <div class="bg-white/95 backdrop-blur-xl p-6 md:p-8 rounded-2xl-custom w-full max-w-sm shadow-2xl border border-white relative">
-        <button onclick="closeTbModal()" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 bg-gray-50 p-1.5 rounded-full">✕</button>
-        <h3 id="tbModalTitle" class="text-lg font-bold text-gray-800 mb-6 border-b border-gray-100 pb-4">상단 메모 추가</h3>
-        <input type="hidden" id="tbModalId">
-        <div class="mb-6">
-            <label class="block text-xs font-bold text-gray-500 mb-2">메모/목표 내용</label>
-            <textarea id="tbModalContent" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-1 focus:ring-primary resize-none text-sm" placeholder="목표나 공지사항을 적어주세요."></textarea>
-        </div>
-        <div class="flex gap-3 justify-end">
-            <button onclick="closeTbModal()" class="px-5 py-2.5 text-sm font-semibold text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200">취소</button>
-            <button onclick="saveTbFromModal()" class="px-5 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-opacity-90">저장하기</button>
-        </div>
-    </div>
-</div>
 
 <div id="timelineModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
     <div class="bg-white/95 backdrop-blur-xl p-6 rounded-2xl-custom w-full max-w-md shadow-2xl border border-white relative max-h-[80vh] flex flex-col">
@@ -286,7 +250,6 @@
 </div>
 
 <script>
-  let topBoards = JSON.parse(localStorage.getItem('dreamy_topboard')) || [];
   let tasks = JSON.parse(localStorage.getItem('dreamy_tasks_v3')) || {};
   let freeJournals = JSON.parse(localStorage.getItem('dreamy_journal_v2')) || []; 
   let stickers = JSON.parse(localStorage.getItem('dreamy_stickers')) || {};
@@ -312,63 +275,6 @@
     else { content.style.maxHeight = '0px'; content.style.opacity = '0'; content.style.marginTop = '0'; icon.classList.add('rotated'); }
   }
   function formatDateKey(date) { return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`; }
-
-  // === 💡 상단 메모 게시판 로직 ===
-  function renderTopBoards() {
-      const listEl = document.getElementById('topboard-list');
-      if (topBoards.length === 0) {
-          listEl.innerHTML = `<div class="text-center py-5 px-4 text-gray-400 text-sm border border-dashed rounded-xl cursor-pointer hover:bg-gray-50 transition" onclick="addTopBoardItem()">새로운 목표나 메모를 추가해보세요.</div>`;
-          return;
-      }
-      let html = '';
-      topBoards.forEach(tb => {
-          html += `
-          <div class="bg-white/80 p-3.5 rounded-xl shadow-sm flex items-center justify-between border border-gray-100 hover:border-primary/30 transition">
-            <p class="text-sm font-medium text-gray-800 whitespace-pre-wrap flex-1">${tb.content}</p>
-            <div class="flex gap-2 ml-4 shrink-0">
-              <button onclick="editTopBoardItem(${tb.id})" class="px-2 py-1.5 text-xs font-semibold text-gray-500 hover:text-primary bg-white shadow-sm border border-gray-100 rounded transition">수정</button>
-              <button onclick="deleteTopBoardItem(${tb.id})" class="px-2 py-1.5 text-xs font-semibold text-gray-500 hover:text-red-500 bg-white shadow-sm border border-gray-100 rounded transition">삭제</button>
-            </div>
-          </div>`;
-      });
-      listEl.innerHTML = html;
-  }
-  function openTbModal() { document.getElementById('topBoardModal').classList.remove('hidden'); document.getElementById('topBoardModal').classList.add('flex'); }
-  function closeTbModal() { document.getElementById('topBoardModal').classList.add('hidden'); document.getElementById('topBoardModal').classList.remove('flex'); }
-  
-  function addTopBoardItem() {
-      document.getElementById('tbModalTitle').innerText = '상단 메모 추가';
-      document.getElementById('tbModalId').value = '';
-      document.getElementById('tbModalContent').value = '';
-      openTbModal();
-  }
-  function editTopBoardItem(id) {
-      const tb = topBoards.find(t => t.id === id); if (!tb) return;
-      document.getElementById('tbModalTitle').innerText = '상단 메모 수정';
-      document.getElementById('tbModalId').value = tb.id;
-      document.getElementById('tbModalContent').value = tb.content;
-      openTbModal();
-  }
-  function saveTbFromModal() {
-      const content = document.getElementById('tbModalContent').value.trim();
-      const editId = document.getElementById('tbModalId').value;
-      if (!content) { alert('메모 내용을 입력해주세요!'); return; }
-      
-      if (editId) {
-          const idx = topBoards.findIndex(t => t.id == editId);
-          if (idx > -1) topBoards[idx].content = content;
-      } else {
-          topBoards.unshift({ id: Date.now(), content });
-      }
-      localStorage.setItem('dreamy_topboard', JSON.stringify(topBoards));
-      closeTbModal(); renderTopBoards();
-  }
-  function deleteTopBoardItem(id) {
-      if (!confirm("이 메모를 삭제하시겠습니까?")) return;
-      topBoards = topBoards.filter(t => t.id !== id);
-      localStorage.setItem('dreamy_topboard', JSON.stringify(topBoards));
-      renderTopBoards();
-  }
 
   // === 달력 렌더링 ===
   function renderCalendar() {
@@ -479,7 +385,7 @@
       }; reader.readAsDataURL(file);
   }
 
-  // 💡 투두 로직 (수정/삭제 버튼 항상 보이게 개선)
+  // 💡 투두 로직
   function renderTasks() {
     const dateKey = formatDateKey(selectedDate); let dayTasks = tasks[dateKey] || [];
     dayTasks.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
@@ -602,7 +508,7 @@
   }
 
   // 초기화
-  renderTopBoards(); renderCalendar(); renderTasks(); renderFreeJournals();
+  renderCalendar(); renderTasks(); renderFreeJournals();
 </script>
 </body>
 </html>
