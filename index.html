@@ -60,6 +60,15 @@
         display: inline-block;
     }
 
+    /* 💡 물위에 비치는 금빛 은빛 반투명 효과 */
+    .water-reflection {
+        background: linear-gradient(180deg, rgba(218, 165, 32, 0.85) 0%, rgba(192, 192, 192, 0.7) 100%);
+        -webkit-background-clip: text;
+        color: transparent;
+        text-shadow: 0px 2px 6px rgba(218, 165, 32, 0.4), 0px 4px 10px rgba(255, 255, 255, 0.5);
+        opacity: 0.95;
+    }
+
     /* 💡 달력 칸: 겹치지 않고 깔끔한 정사각형 유지 */
     .calendar-day {
       display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
@@ -76,7 +85,7 @@
     .calendar-day.empty-day { cursor: default; background: transparent; box-shadow: none; border: none; }
     .calendar-day.today { color: #e8306e; background-color: rgba(255,255,255,0.9); border: 2px solid rgba(232, 48, 110, 0.4); }
 
-    .date-num { font-size: 0.9rem; line-height: 1; z-index: 2; }
+    .date-num { font-size: 0.9rem; line-height: 1; z-index: 2; font-weight: 700; }
     
     /* 달력 내부 지저분한 글씨 삭제 -> 심플한 점(Dot)과 이모지만 표시 */
     .task-dot-container { display: flex; gap: 2px; margin-top: auto; padding-bottom: 4px; z-index: 2; }
@@ -219,7 +228,13 @@
     
     <div class="mb-4">
         <label class="block text-xs font-bold text-gray-500 mb-1">시간 (선택)</label>
-        <input type="time" id="modalTime" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-primary text-sm font-medium">
+        <div class="flex items-center gap-3">
+            <input type="time" id="modalTime" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-primary text-sm font-medium">
+            <div class="flex items-center gap-1 shrink-0">
+                <input type="checkbox" id="modalAlarm" class="w-4 h-4 text-primary bg-gray-50 border-gray-300 rounded focus:ring-primary cursor-pointer">
+                <label for="modalAlarm" class="text-xs font-bold text-gray-600 cursor-pointer">알람 켜기</label>
+            </div>
+        </div>
     </div>
 
     <div class="mb-6">
@@ -238,11 +253,11 @@
       <input type="hidden" id="jModalId">
       <div class="mb-4">
         <label class="block text-xs font-bold text-gray-500 mb-1">날짜/제목 (안내선 디자인)</label>
-        <input type="text" id="jModalDateStr" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-primary text-sm" placeholder="예: 2/25일의 일기">
+        <input type="text" id="jModalDateStr" onkeydown="if(event.key === 'Enter') document.getElementById('jModalContent').focus();" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-primary text-sm" placeholder="예: 2/25일의 일기">
       </div>
       <div class="mb-6">
         <label class="block text-xs font-bold text-gray-500 mb-1">내용</label>
-        <textarea id="jModalContent" rows="5" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-primary resize-none text-sm" placeholder="마음속 이야기를 적어보세요."></textarea>
+        <textarea id="jModalContent" rows="5" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-primary resize-none text-sm" placeholder="마음속 이야기를 적어보세요.&#13;&#10;(Enter: 기록 저장 / Shift + Enter: 줄바꿈)" onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); saveJournalFromModal(); }"></textarea>
       </div>
       <button onclick="saveJournalFromModal()" class="w-full py-2.5 text-sm font-bold text-white bg-primary rounded-xl hover:bg-opacity-90 shadow-md">기록 저장</button>
     </div>
@@ -291,7 +306,8 @@
       // 달력을 누르면 Date Hub 모달 열림!
       html += `<div class="${classes}" onclick="openDateHub('${year}', '${month}', '${i}', '${dateKey}', ${iterDate.getDay()})">`;
       
-      html += `<span class="date-num pointer-events-none">${i}</span>`;
+      // 글씨에 물빛(금빛/은빛) 비침 효과 부여
+      html += `<span class="date-num pointer-events-none water-reflection">${i}</span>`;
 
       // 스티커 중 첫번째 것을 달력 칸 전체 배경이나 중앙에 희미하게 표시 (공간 아끼기)
       let bgHtml = '';
@@ -378,11 +394,14 @@
           let tkHtml = '';
           tkArr.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
           tkArr.forEach(t => {
+              // 은은한 골드 알람 표시
+              const alarmIcon = t.alarm ? `<span class="text-[10px] text-[#DAA520] opacity-60 ml-2 font-medium drop-shadow-sm">🔔 알람 켜짐</span>` : '';
               tkHtml += `
               <div class="flex flex-col bg-white p-3 rounded-lg border border-gray-100 shadow-sm gap-2">
                   <div class="flex justify-between items-start">
-                      <div class="flex items-center gap-2">
+                      <div class="flex items-center gap-1">
                           ${t.time ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">${t.time}</span>` : ''}
+                          ${alarmIcon}
                       </div>
                       <div class="flex gap-1">
                           <button onclick="editTaskFromHub(${t.id})" class="action-btn edit">수정</button>
@@ -444,6 +463,7 @@
       document.getElementById('modalTitle').innerText = '일정 추가';
       document.getElementById('modalTaskId').value = ''; 
       document.getElementById('modalTime').value = ''; 
+      document.getElementById('modalAlarm').checked = false;
       document.getElementById('modalTitleInput').value = ''; 
       document.getElementById('taskModal').classList.remove('hidden'); document.getElementById('taskModal').classList.add('flex');
   }
@@ -452,6 +472,7 @@
       document.getElementById('modalTitle').innerText = '일정 수정';
       document.getElementById('modalTaskId').value = task.id; 
       document.getElementById('modalTime').value = task.time || ''; 
+      document.getElementById('modalAlarm').checked = task.alarm || false;
       document.getElementById('modalTitleInput').value = task.title; 
       document.getElementById('taskModal').classList.remove('hidden'); document.getElementById('taskModal').classList.add('flex');
   }
@@ -460,14 +481,15 @@
   function saveTaskFromModal() {
       const title = document.getElementById('modalTitleInput').value.trim(); if (!title) { alert('내용을 입력하세요.'); return; }
       const time = document.getElementById('modalTime').value; 
+      const alarm = document.getElementById('modalAlarm').checked;
       const editId = document.getElementById('modalTaskId').value;
       
       if (!tasks[hubSelectedDateKey]) tasks[hubSelectedDateKey] = [];
       if (editId) {
           const idx = tasks[hubSelectedDateKey].findIndex(t => t.id == editId); 
-          if(idx > -1) tasks[hubSelectedDateKey][idx] = { id: tasks[hubSelectedDateKey][idx].id, title, time };
+          if(idx > -1) tasks[hubSelectedDateKey][idx] = { id: tasks[hubSelectedDateKey][idx].id, title, time, alarm, alarmTriggered: false };
       } else {
-          tasks[hubSelectedDateKey].push({ id: Date.now(), title, time }); 
+          tasks[hubSelectedDateKey].push({ id: Date.now(), title, time, alarm, alarmTriggered: false }); 
       }
       localStorage.setItem('dreamy_tasks_v5', JSON.stringify(tasks));
       closeTaskModal(); renderHubContent();
@@ -493,13 +515,13 @@
           html += `
           <div class="bg-white/80 p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col hover:bg-white transition">
             <div class="flex justify-between items-center mb-2 pb-2 border-b border-gray-100">
-              <span class="text-xs font-bold text-primary">${j.dateStr}</span>
+              <span class="text-[13px] font-bold water-reflection">${j.dateStr}</span>
               <div class="flex gap-1">
                 <button onclick="editJournal(${j.id})" class="action-btn edit !text-[9px]">수정</button>
                 <button onclick="deleteJournal(${j.id})" class="action-btn delete !text-[9px]">삭제</button>
               </div>
             </div>
-            <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">${j.content}</p>
+            <p class="text-sm leading-relaxed whitespace-pre-wrap water-reflection">${j.content}</p>
           </div>`;
       });
       listEl.innerHTML = html;
@@ -524,6 +546,29 @@
       if (!confirm("삭제하시겠습니까?")) return;
       freeJournals = freeJournals.filter(x => x.id !== id); localStorage.setItem('dreamy_journal_v3', JSON.stringify(freeJournals)); renderFreeJournals();
   }
+
+  // === 실시간 알람 체크 로직 ===
+  setInterval(() => {
+      const now = new Date();
+      const todayKey = formatDateKey(now);
+      const currentTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      
+      if(tasks[todayKey]) {
+          let tasksUpdated = false;
+          tasks[todayKey].forEach(t => {
+              // 설정된 시간과 현재 시간이 같고, 알람이 켜져 있으며, 아직 울리지 않았을 때
+              if(t.alarm && t.time === currentTime && !t.alarmTriggered) {
+                  alert(`🔔 [알람] 시간이 되었습니다!\n\n일정: ${t.title}`);
+                  t.alarmTriggered = true;
+                  tasksUpdated = true;
+              }
+          });
+          // 상태가 변경(울림 처리)되었으면 로컬 스토리지에 저장하여 중복 울림 방지
+          if (tasksUpdated) {
+              localStorage.setItem('dreamy_tasks_v5', JSON.stringify(tasks));
+          }
+      }
+  }, 10000); // 10초마다 체크
 
   // 초기화
   goToToday(); renderFreeJournals();
