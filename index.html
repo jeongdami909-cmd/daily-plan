@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Aesthetic Scheduler</title>
+<title>Aesthetic Scheduler Pro</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -13,15 +13,12 @@
       theme: {
         extend: {
           colors: {
-            primary: '#738276', 
-            secondary: '#e9ece6', 
-            accent: '#e8306e', 
-            glassBg: 'rgba(255, 255, 255, 0.75)', 
-            glassBorder: 'rgba(255, 255, 255, 0.9)',
+            primary: '#738276', secondary: '#e9ece6', accent: '#e8306e', 
+            glassBg: 'rgba(255, 255, 255, 0.85)', glassBorder: 'rgba(255, 255, 255, 0.95)',
           },
           fontFamily: { sans: ['Pretendard', '-apple-system', 'sans-serif'], },
           borderRadius: { '2xl-custom': '1.5rem', },
-          boxShadow: { 'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.05)', }
+          boxShadow: { 'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.08)', }
         }
       }
     }
@@ -29,247 +26,190 @@
 <style>
     body {
       font-family: 'Pretendard', sans-serif;
-      /* 배경 이미지를 좀 더 감성적인 것으로 교체 (예시) */
       background-image: url('https://images.unsplash.com/photo-1618331835717-80d5a0a08c1e?q=80&w=2574&auto=format&fit=crop');
       background-size: cover; background-position: center; background-attachment: fixed; color: #333333;
       transition: background-image 0.5s ease-in-out;
     }
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-thumb { background: #b0b8b2; border-radius: 10px; }
     ::-webkit-scrollbar-track { background: transparent; }
 
     .glass-card {
-        background: var(--glassBg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-        border: 1px solid var(--glassBorder); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05); transition: all 0.3s ease;
+        background: var(--glassBg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glassBorder); box-shadow: var(--tw-shadow-glass); transition: all 0.3s ease;
     }
     
+    /* 💡 달력 칸: 꽉 차고 정보가 다 보이게 */
     .calendar-day {
-      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-      padding: 6px 4px; font-size: 0.9rem; font-weight: 500; cursor: pointer;
+      display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;
+      padding: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer;
       border-radius: 12px; transition: all 0.2s ease-in-out; color: #444;
-      position: relative; overflow: hidden; border: 1px solid transparent;
+      position: relative; overflow: hidden; border: 1px solid transparent; background-color: rgba(255,255,255,0.4);
+      min-height: 100px; /* 기본 높이 확보 */
     }
-    /* 달력 크기 조절 클래스 */
-    .calendar-day.expanded { min-height: 110px; }
-    .calendar-day.compact { aspect-ratio: 1 / 1.15; }
+    .calendar-day:hover:not(.empty-day) { background-color: rgba(233, 236, 230, 0.8); border-color: #cdd4ce; }
+    .calendar-day.empty-day { cursor: default; background: transparent; }
+    .calendar-day.today { background-color: rgba(115, 130, 118, 0.1); border: 2px solid #738276; }
+    .calendar-day.selected { background-color: white; border: 2px solid #e8306e; box-shadow: 0 0 15px rgba(232, 48, 110, 0.1); z-index: 10;}
 
-    .calendar-day:hover:not(.empty-day):not(.selected):not(.today) { background-color: #e9ece6; color: #738276; }
-    .calendar-day.empty-day { cursor: default; color: #d1d5db; }
-    .calendar-day.today { background-color: #738276; color: white; font-weight: 700; }
-    .calendar-day.selected:not(.today) { background-color: rgba(255,255,255,0.9); color: #738276; font-weight: 700; border: 2px solid #738276; }
-
-    .cal-anniversary {
-        font-size: 0.65rem; font-weight: 700; color: #e8306e; 
-        width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        margin-top: 4px; background: rgba(232, 48, 110, 0.1); border-radius: 4px; padding: 2px 0;
+    /* 달력 내부 아이템 디자인 */
+    .date-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 4px; }
+    .date-num { font-size: 1.1rem; font-weight: 700; }
+    .today .date-num { color: #738276; }
+    
+    .cal-emoji { font-size: 1.2rem; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    
+    /* 달력에 보이는 미니 일정 텍스트 */
+    .cal-task-snippet {
+        font-size: 0.65rem; color: #444; background: rgba(255,255,255,0.9); border-radius: 4px; 
+        padding: 2px 4px; margin-bottom: 2px; text-align: left;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 2px solid #738276;
     }
-    .cal-task-label {
-        font-size: 0.65rem; color: #555; background: rgba(0,0,0,0.05); border-radius: 4px; 
-        width: 100%; padding: 2px 4px; margin-top: 2px; text-align: left;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    .cal-task-snippet.special { border-left-color: #e8306e; background: rgba(232, 48, 110, 0.05); color: #e8306e; font-weight: bold; }
+
+    /* 달력에 첨부된 사진 썸네일 */
+    .cal-photo-thumb {
+        width: 100%; height: 35px; object-fit: cover; border-radius: 6px; margin-top: 2px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1); opacity: 0.9;
     }
 
-    .cal-dots-container { display: flex; gap: 2px; margin-top: 3px; justify-content: center; width: 100%; flex-wrap: wrap; padding: 0 4px;}
-    .task-dot { width: 5px; height: 5px; background-color: #a3a3a3; border-radius: 50%; }
-
-    .sticker-container {
-        position: absolute; bottom: 2px; right: 2px; width: 100%; height: auto;
-        display: flex; flex-wrap: wrap-reverse; justify-content: flex-end; gap: -2px; pointer-events: none; z-index: 5;
-    }
-    .sticker-item {
-        width: 24px; height: 24px; border-radius: 50%; object-fit: cover;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2); border: 1.5px solid white; z-index: 10;
-        background: white; display: flex; align-items: center; justify-content: center; font-size: 14px;
-        pointer-events: auto; cursor: pointer; transition: transform 0.2s;
-    }
-    .sticker-item:hover { transform: scale(1.2); }
-
-    .collapsible-content { overflow: hidden; transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out; }
-    .toggle-icon { transition: transform 0.3s ease; }
-    .rotated { transform: rotate(180deg); }
+    /* 오른쪽 상세 패널(게시판) 부드러운 전환 */
+    #detail-panel { transition: all 0.3s ease-in-out; }
+    
+    /* 숨김 이모지 라디오 버튼 커스텀 */
+    input[type="radio"]:checked + label { background-color: #e9ece6; transform: scale(1.2); border-color: #738276; }
 </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen pb-10">
 
-<header class="fixed top-0 left-0 w-full p-6 flex justify-end items-center z-40 gap-3">
-    <button onclick="requestNotificationPermission()" class="cursor-pointer bg-white/40 hover:bg-white/70 text-gray-700 text-xs px-4 py-2 rounded-full backdrop-blur-md shadow-sm transition flex items-center gap-2 border border-white/30">
-        <span>🔔 알림 켜기</span>
-    </button>
-    <label class="cursor-pointer bg-white/40 hover:bg-white/70 text-gray-700 text-xs px-4 py-2 rounded-full backdrop-blur-md shadow-sm transition flex items-center gap-2 border border-white/30">
+<header class="w-full p-4 flex justify-between items-center z-40 mb-4">
+    <h1 class="text-xl font-bold text-gray-800 tracking-tight drop-shadow-md bg-white/60 px-3 py-1 rounded-lg backdrop-blur-sm">
+        <span class="text-primary">My</span> Scheduler
+    </h1>
+    <label class="cursor-pointer bg-white/80 hover:bg-white shadow-sm text-gray-700 text-xs px-3 py-1.5 rounded-full backdrop-blur-md transition flex items-center gap-1 border border-white">
         <span>📷 배경 변경</span>
         <input type="file" class="hidden" accept="image/*" onchange="changeBackground(event)">
     </label>
 </header>
 
-<div class="h-[45vh] md:h-[55vh] w-full pointer-events-none transition-all ease-in-out duration-500"></div>
-
-<main class="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-5xl mx-auto px-6 md:px-12 pb-32 relative z-10">
+<main class="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-7xl mx-auto px-4 md:px-8 relative z-10 items-start">
   
-  <div class="lg:col-span-6 space-y-8">
-      
-      <section class="glass-card p-6 rounded-2xl-custom relative">
-        <div class="flex justify-between items-center mb-6 cursor-pointer" onclick="toggleSection('calendar-content', 'calendar-icon')">
-            <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2 tracking-tight">
-                Monthly <svg id="calendar-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-            </h2>
-            <div class="flex gap-2">
-                <button onclick="event.stopPropagation(); toggleCalendarSize()" class="text-[11px] font-semibold text-gray-600 bg-white/80 px-3 py-1.5 rounded-full shadow-sm border border-gray-200/50 hover:bg-white transition">↕️ 크기 조절</button>
-                <button onclick="event.stopPropagation(); goToToday()" class="text-[11px] font-semibold text-white bg-primary px-3 py-1.5 rounded-full hover:bg-primary/90 transition shadow-sm">오늘</button>
+  <div class="lg:col-span-8">
+      <section class="glass-card p-4 md:p-6 rounded-2xl-custom">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-3">
+                <button onclick="changeMonth(-1)" class="p-1.5 rounded-full bg-white/50 hover:bg-white text-gray-600 transition shadow-sm">❮</button>
+                <h2 id="calendar-month-year" class="text-xl font-extrabold text-gray-800 tracking-wide"></h2>
+                <button onclick="changeMonth(1)" class="p-1.5 rounded-full bg-white/50 hover:bg-white text-gray-600 transition shadow-sm">❯</button>
             </div>
+            <button onclick="goToToday()" class="text-xs font-bold text-white bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition shadow-sm">오늘로</button>
         </div>
         
-        <div id="calendar-content" class="collapsible-content max-h-[1200px] opacity-100">
-            <div class="flex justify-between items-center mb-6 px-2">
-                <button onclick="changeMonth(-1)" class="p-2 rounded-full hover:bg-white/50 text-gray-500 hover:text-primary transition">❮</button>
-                <span id="calendar-month-year" class="text-lg font-bold text-gray-800 tracking-wide"></span>
-                <button onclick="changeMonth(1)" class="p-2 rounded-full hover:bg-white/50 text-gray-500 hover:text-primary transition">❯</button>
-            </div>
-            
-            <div class="grid grid-cols-7 gap-2 mb-3 text-center">
-                <div class="text-xs font-bold text-red-400 uppercase">일</div>
-                <div class="text-xs font-bold text-gray-500 uppercase">월</div>
-                <div class="text-xs font-bold text-gray-500 uppercase">화</div>
-                <div class="text-xs font-bold text-gray-500 uppercase">수</div>
-                <div class="text-xs font-bold text-gray-500 uppercase">목</div>
-                <div class="text-xs font-bold text-gray-500 uppercase">금</div>
-                <div class="text-xs font-bold text-blue-400 uppercase">토</div>
-            </div>
-            <div class="grid grid-cols-7 gap-2" id="calendar-grid"></div>
+        <div class="grid grid-cols-7 gap-1 md:gap-2 mb-2 text-center">
+            <div class="text-[11px] font-bold text-red-500 uppercase">일</div>
+            <div class="text-[11px] font-bold text-gray-500 uppercase">월</div>
+            <div class="text-[11px] font-bold text-gray-500 uppercase">화</div>
+            <div class="text-[11px] font-bold text-gray-500 uppercase">수</div>
+            <div class="text-[11px] font-bold text-gray-500 uppercase">목</div>
+            <div class="text-[11px] font-bold text-gray-500 uppercase">금</div>
+            <div class="text-[11px] font-bold text-blue-500 uppercase">토</div>
         </div>
+        
+        <div class="grid grid-cols-7 gap-1 md:gap-2" id="calendar-grid"></div>
       </section>
-
   </div>
 
-  <div class="lg:col-span-6 space-y-8 mt-4 lg:mt-0">
-      <section class="glass-card p-6 rounded-2xl-custom">
-        <div class="flex justify-between items-center cursor-pointer mb-2" onclick="toggleSection('todo-content', 'todo-icon')">
-          <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2 tracking-tight">
-              <span id="focus-title">선택한 날짜의 일정</span>
-              <svg id="todo-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-          </h2>
-          <div class="flex gap-2">
-              <button onclick="event.stopPropagation(); openStickerModal()" class="flex items-center gap-1 text-[11px] font-semibold text-gray-600 bg-white/80 px-3 py-1.5 rounded-full shadow-sm hover:bg-white transition border border-gray-200/50">✨ 다꾸</button>
-              <button onclick="event.stopPropagation(); addTask()" class="flex items-center gap-1 text-[11px] font-semibold text-white bg-primary px-4 py-1.5 rounded-full shadow-sm hover:bg-primary/90 transition">+ 일정 추가</button>
-          </div>
+  <div class="lg:col-span-4 sticky top-6" id="detail-panel">
+      <section class="glass-card p-5 md:p-6 rounded-2xl-custom flex flex-col h-full min-h-[500px]">
+        <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-200/50">
+            <div>
+                <h2 id="detail-date-title" class="text-lg font-bold text-primary tracking-tight">날짜를 선택하세요</h2>
+                <p id="detail-emoji-display" class="text-sm mt-1"></p> </div>
+            <button onclick="addTask()" class="flex items-center gap-1 text-[11px] font-bold text-white bg-gray-800 px-3 py-2 rounded-lg shadow-md hover:bg-black transition shrink-0">
+                + 일정 작성
+            </button>
         </div>
         
-        <div id="todo-content" class="collapsible-content max-h-[1000px] opacity-100 mt-6">
-            <div id="task-list" class="space-y-4 max-h-[450px] overflow-y-auto pr-3 custom-scrollbar py-2"></div>
+        <div id="detail-photo-area" class="w-full mb-4 hidden">
+            <img id="detail-photo-img" src="" class="w-full h-40 object-cover rounded-xl shadow-sm border-2 border-white">
         </div>
-      </section>
 
-      <section class="glass-card p-6 rounded-2xl-custom">
-        <div class="flex justify-between items-center cursor-pointer mb-2" onclick="toggleSection('journal-content', 'journal-icon')">
-          <div class="flex items-center gap-2">
-              <h2 class="text-xl font-bold text-gray-800 tracking-tight">자유 기록장</h2>
-              <svg id="journal-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-          </div>
-          <button onclick="event.stopPropagation(); addJournal()" class="text-xs font-semibold text-white bg-primary px-4 py-1.5 rounded-full hover:bg-primary/90 transition shadow-sm">+ 기록 추가</button>
-        </div>
-        
-        <div id="journal-content" class="collapsible-content max-h-[2000px] opacity-100 mt-6">
-            <div id="free-journal-list" class="flex flex-col gap-5 max-h-[600px] overflow-y-auto custom-scrollbar pr-3 w-full py-2"></div>
+        <div id="detail-task-list" class="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3">
+            <div class="text-center text-gray-400 text-sm py-10">달력에서 날짜를 선택하면<br>상세 일정이 보입니다.</div>
         </div>
       </section>
   </div>
+
 </main>
 
-<div id="taskModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
-  <div class="bg-white/95 backdrop-blur-xl p-6 md:p-8 rounded-2xl-custom w-full max-w-md shadow-2xl border border-white relative">
-    <button onclick="closeModal()" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 bg-gray-50 p-1.5 rounded-full">✕</button>
-    <h3 id="modalTitle" class="text-lg md:text-xl font-bold text-gray-800 mb-6 border-b border-gray-100 pb-4">일정 추가</h3>
+<div id="taskModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
+  <div class="bg-white/95 backdrop-blur-xl p-6 md:p-8 rounded-2xl-custom w-full max-w-md shadow-2xl relative">
+    <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 bg-gray-100 p-2 rounded-full">✕</button>
+    <h3 id="modalTitle" class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3">일정 및 다꾸 추가</h3>
     
     <input type="hidden" id="modalTaskId">
-    <input type="hidden" id="modalOldDate"> 
-    
-    <div class="grid grid-cols-2 gap-3 mb-4">
-        <div>
-            <label class="block text-xs font-bold text-gray-500 mb-2">날짜</label>
-            <input type="date" id="modalDate" class="w-full px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-1 focus:ring-primary text-sm">
+    <input type="hidden" id="modalDate"> <div class="flex gap-3 mb-4">
+        <div class="flex-1">
+            <label class="block text-xs font-bold text-gray-500 mb-1">시간 (선택)</label>
+            <input type="time" id="modalTime" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-primary text-sm font-medium">
         </div>
-        <div>
-            <label class="block text-xs font-bold text-gray-500 mb-2">시간 (선택)</label>
-            <input type="time" id="modalTime" class="w-full px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-1 focus:ring-primary text-sm">
-        </div>
-    </div>
-
-    <div class="mb-5">
-        <label class="flex items-center gap-2 cursor-pointer bg-pink-50/50 p-3 rounded-xl border border-pink-100 hover:bg-pink-50 transition">
-            <input type="checkbox" id="modalIsSpecial" class="w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent">
-            <span class="text-xs font-semibold text-gray-700">🌟 달력에 이름 표시하기 (기념일/중요)</span>
-        </label>
-        <p class="text-[10px] text-gray-400 mt-2 ml-1">* 시간을 설정해두면 해당 시간에 맞춰 알림이 옵니다!</p>
-    </div>
-
-    <div class="mb-8">
-      <label class="block text-xs font-bold text-gray-500 mb-2">내용</label>
-      <textarea id="modalTitleInput" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-1 focus:ring-primary resize-none text-sm" placeholder="어떤 일정이 있나요?"></textarea>
-    </div>
-    <div class="flex gap-3 justify-end">
-      <button onclick="closeModal()" class="px-5 py-2.5 text-sm font-semibold text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200">취소</button>
-      <button onclick="saveTaskFromModal()" class="px-5 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-opacity-90">저장하기</button>
-    </div>
-  </div>
-</div>
-
-<div id="stickerModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
-    <div class="bg-white/95 backdrop-blur-xl p-6 rounded-2xl-custom w-full max-w-sm shadow-2xl border border-white relative">
-        <button onclick="closeStickerModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-50 p-1.5 rounded-full">✕</button>
-        <h3 class="text-lg font-bold text-gray-800 mb-1">다이어리 꾸미기</h3>
-        <p class="text-xs text-gray-500 mb-4">선택한 날짜에 붙일 스티커를 고르세요.</p>
-        <div class="grid grid-cols-5 gap-3 mb-6">
-            <button onclick="saveSticker('☕')" class="text-2xl hover:scale-125 transition">☕</button>
-            <button onclick="saveSticker('💻')" class="text-2xl hover:scale-125 transition">💻</button>
-            <button onclick="saveSticker('🏋️')" class="text-2xl hover:scale-125 transition">🏋️</button>
-            <button onclick="saveSticker('📖')" class="text-2xl hover:scale-125 transition">📖</button>
-            <button onclick="saveSticker('✈️')" class="text-2xl hover:scale-125 transition">✈️</button>
-            <button onclick="saveSticker('💊')" class="text-2xl hover:scale-125 transition">💊</button>
-            <button onclick="saveSticker('🎂')" class="text-2xl hover:scale-125 transition">🎂</button>
-            <button onclick="saveSticker('🌙')" class="text-2xl hover:scale-125 transition">🌙</button>
-            <button onclick="saveSticker('🥰')" class="text-2xl hover:scale-125 transition">🥰</button>
-            <button onclick="saveSticker('😭')" class="text-2xl hover:scale-125 transition">😭</button>
-        </div>
-        <div class="border-t border-gray-100 pt-4 mb-4">
-            <label class="cursor-pointer block w-full text-center bg-secondary text-primary font-semibold text-sm py-3 rounded-xl hover:bg-gray-200 transition">
-                📷 내 사진으로 스티커 붙이기
-                <input type="file" class="hidden" accept="image/*" onchange="handleImageSticker(event)">
+        <div class="flex items-end">
+            <label class="flex items-center gap-1 cursor-pointer bg-pink-50 p-2 rounded-lg border border-pink-100 h-[38px]">
+                <input type="checkbox" id="modalIsSpecial" class="w-4 h-4 text-accent border-gray-300 rounded">
+                <span class="text-[10px] font-bold text-accent">기념일 💖</span>
             </label>
         </div>
-        <button onclick="clearStickers()" class="w-full text-center text-xs text-red-400 py-2 hover:bg-red-50 rounded-xl transition">🗑️ 이 날짜의 스티커 모두 떼기</button>
     </div>
-</div>
 
-<div id="journalModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
-    <div class="bg-white/95 backdrop-blur-xl p-6 md:p-8 rounded-2xl-custom w-full max-w-lg shadow-2xl border border-white relative">
-      <button onclick="closeJournalModal()" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 bg-gray-50 p-1.5 rounded-full">✕</button>
-      <h3 id="jModalTitle" class="text-lg md:text-xl font-bold text-gray-800 mb-6 border-b border-gray-100 pb-4">기록 작성</h3>
-      <input type="hidden" id="jModalId">
-      <div class="mb-5">
-        <label class="block text-xs font-bold text-gray-500 mb-2">날짜 및 요일 (직접 입력)</label>
-        <input type="text" id="jModalDateStr" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-1 focus:ring-primary text-sm" placeholder="예: 2/25 수요일 날씨 맑음">
-      </div>
-      <div class="mb-8">
-        <label class="block text-xs font-bold text-gray-500 mb-2">내용</label>
-        <textarea id="jModalContent" rows="6" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-1 focus:ring-primary resize-none text-sm" placeholder="오늘의 생각, 일기, 메모를 자유롭게 적어보세요."></textarea>
-      </div>
-      <div class="flex gap-3 justify-end">
-        <button onclick="closeJournalModal()" class="px-5 py-2.5 text-sm font-semibold text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200">취소</button>
-        <button onclick="saveJournalFromModal()" class="px-5 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-opacity-90">저장하기</button>
-      </div>
+    <div class="mb-4">
+      <label class="block text-xs font-bold text-gray-500 mb-1">내용 (필수)</label>
+      <textarea id="modalTitleInput" rows="2" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-primary resize-none text-sm" placeholder="무슨 일정이 있나요?"></textarea>
     </div>
+
+    <div class="mb-4">
+        <label class="block text-xs font-bold text-gray-500 mb-1">오늘의 기분 (스티커 하나 콕!)</label>
+        <div class="flex gap-2 flex-wrap" id="emoji-selector">
+            <label class="cursor-pointer p-1 border border-transparent rounded-lg hover:bg-gray-100 transition"><input type="radio" name="emoji" value="😊" class="hidden">😊</label>
+            <label class="cursor-pointer p-1 border border-transparent rounded-lg hover:bg-gray-100 transition"><input type="radio" name="emoji" value="😭" class="hidden">😭</label>
+            <label class="cursor-pointer p-1 border border-transparent rounded-lg hover:bg-gray-100 transition"><input type="radio" name="emoji" value="☕" class="hidden">☕</label>
+            <label class="cursor-pointer p-1 border border-transparent rounded-lg hover:bg-gray-100 transition"><input type="radio" name="emoji" value="💻" class="hidden">💻</label>
+            <label class="cursor-pointer p-1 border border-transparent rounded-lg hover:bg-gray-100 transition"><input type="radio" name="emoji" value="🎉" class="hidden">🎉</label>
+            <label class="cursor-pointer p-1 border border-transparent rounded-lg hover:bg-gray-100 transition"><input type="radio" name="emoji" value="✈️" class="hidden">✈️</label>
+            <label class="cursor-pointer p-1 border border-transparent rounded-lg hover:bg-gray-100 transition"><input type="radio" name="emoji" value="" class="hidden" checked><span class="text-xs text-gray-400">없음</span></label>
+        </div>
+    </div>
+
+    <div class="mb-6">
+        <label class="block text-xs font-bold text-gray-500 mb-1">사진 첨부 (1장)</label>
+        <div class="flex items-center gap-2">
+            <label class="cursor-pointer bg-gray-100 text-gray-600 text-xs px-3 py-2 rounded-lg hover:bg-gray-200 transition font-semibold border border-gray-200">
+                + 사진 고르기
+                <input type="file" id="modalPhotoInput" class="hidden" accept="image/*" onchange="previewPhoto(event)">
+            </label>
+            <img id="photo-preview" src="" class="h-10 w-10 object-cover rounded-md hidden border border-gray-300">
+            <button id="remove-photo-btn" class="hidden text-[10px] text-red-500 underline" onclick="removePhotoPreview()">사진 빼기</button>
+        </div>
+        <input type="hidden" id="modalPhotoData">
+    </div>
+
+    <div class="flex gap-2 justify-end pt-2 border-t border-gray-100">
+      <button onclick="closeModal()" class="px-4 py-2.5 text-xs font-bold text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200">취소</button>
+      <button onclick="saveTaskFromModal()" class="px-6 py-2.5 text-xs font-bold text-white bg-primary rounded-xl hover:bg-opacity-90 shadow-md">저장 완료</button>
+    </div>
+  </div>
 </div>
 
 <script>
-  let tasks = JSON.parse(localStorage.getItem('dreamy_tasks_v3')) || {};
-  let freeJournals = JSON.parse(localStorage.getItem('dreamy_journal_v2')) || []; 
-  let stickers = JSON.parse(localStorage.getItem('dreamy_stickers')) || {};
+  // === 데이터 통합 ===
+  // 이제 tasks 배열 안에 { id, title, time, isSpecial, emoji, photoData } 가 모두 들어갑니다!
+  let tasks = JSON.parse(localStorage.getItem('dreamy_tasks_pro')) || {};
   
   const monthNames = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
+  const weekDaysKor = ["일", "월", "화", "수", "목", "금", "토"];
   let currentDate = new Date();
-  let selectedDate = new Date();
-  let isCalendarExpanded = true; 
-  let triggeredAlarms = new Set(); 
+  let selectedDate = new Date(); // 초기값 오늘
 
+  // 배경 세팅
   const savedBg = localStorage.getItem('dreamy_bg');
   if(savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
   function changeBackground(event) {
@@ -281,115 +221,73 @@
     }
   }
 
-  // === 알림 기능 ===
-  function requestNotificationPermission() {
-      if (!("Notification" in window)) {
-          alert("현재 사용 중인 브라우저에서는 알림 기능을 지원하지 않습니다.");
-      } else if (Notification.permission === "granted") {
-          alert("이미 알림이 허용되어 있습니다! 정해진 시간에 알림이 울립니다.");
-      } else if (Notification.permission !== "denied") {
-          Notification.requestPermission().then(function (permission) {
-              if (permission === "granted") {
-                  alert("알림이 켜졌습니다! 창을 열어두시면 알림을 받을 수 있습니다.");
-              }
-          });
-      } else {
-          alert("브라우저 설정에서 알림이 차단되어 있습니다. 설정에서 허용으로 변경해주세요.");
-      }
-  }
-
-  setInterval(() => {
-      if (Notification.permission !== "granted") return;
-      
-      const now = new Date();
-      const dateKey = formatDateKey(now);
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const currentTimeStr = `${hours}:${minutes}`;
-
-      if (tasks[dateKey]) {
-          tasks[dateKey].forEach(task => {
-              if (task.time === currentTimeStr) {
-                  const alarmId = `${dateKey}-${task.id}`;
-                  if (!triggeredAlarms.has(alarmId)) {
-                      new Notification("🗓️ 일정 알림", {
-                          body: `${task.title} 시간이 되었습니다!`,
-                      });
-                      triggeredAlarms.add(alarmId);
-                  }
-              }
-          });
-      }
-  }, 10000);
-
-  function toggleSection(contentId, iconId) {
-    const content = document.getElementById(contentId); const icon = document.getElementById(iconId);
-    if (content.style.maxHeight === '0px') { content.style.maxHeight = '2000px'; content.style.opacity = '1'; content.style.marginTop = '1.5rem'; icon.classList.remove('rotated'); } 
-    else { content.style.maxHeight = '0px'; content.style.opacity = '0'; content.style.marginTop = '0'; icon.classList.add('rotated'); }
-  }
   function formatDateKey(date) { return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`; }
 
-  function toggleCalendarSize() {
-      isCalendarExpanded = !isCalendarExpanded;
-      renderCalendar();
-  }
-
-  // === 달력 렌더링 ===
+  // === 💡 달력 렌더링 (모든 정보 압축 표시) ===
   function renderCalendar() {
     const year = currentDate.getFullYear(); const month = currentDate.getMonth(); const today = new Date();
     document.getElementById('calendar-month-year').innerText = `${year}년 ${monthNames[month]}`;
     const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
     
     let html = '';
-    const sizeClass = isCalendarExpanded ? 'expanded' : 'compact';
-    for (let i = 0; i < firstDay; i++) html += `<div class="calendar-day empty-day ${sizeClass}"></div>`;
+    for (let i = 0; i < firstDay; i++) html += `<div class="calendar-day empty-day"></div>`;
     
     for (let i = 1; i <= daysInMonth; i++) {
       const iterDate = new Date(year, month, i); const dateKey = formatDateKey(iterDate);
       const isToday = (i === today.getDate() && month === today.getMonth() && year === today.getFullYear());
       const isSelected = (i === selectedDate.getDate() && month === selectedDate.getMonth() && year === selectedDate.getFullYear());
       
-      let classes = `calendar-day ${sizeClass}`; 
+      let classes = "calendar-day"; 
       if (isToday) classes += " today"; 
-      else if (isSelected) classes += " selected";
+      if (isSelected) classes += " selected";
 
-      html += `<div class="${classes}" onclick="setDateAndAdd(${year}, ${month}, ${i})">
-                <span class="w-full text-center block pointer-events-none">${i}</span>`;
-                 
+      // 달력 칸 그리기 시작
+      html += `<div class="${classes}" onclick="selectDate(${year}, ${month}, ${i})">`;
+      
+      // 상단: 날짜 + 첫 번째 이모지(스티커)
+      let dayEmoji = '';
+      if (tasks[dateKey]) {
+          const firstTaskWithEmoji = tasks[dateKey].find(t => t.emoji);
+          if (firstTaskWithEmoji) dayEmoji = firstTaskWithEmoji.emoji;
+      }
+      html += `
+        <div class="date-header">
+            <span class="date-num">${i}</span>
+            <span class="cal-emoji">${dayEmoji}</span>
+        </div>`;
+
+      // 하단: 일정 요약 & 사진 썸네일
       if (tasks[dateKey] && tasks[dateKey].length > 0) {
-          const specialTask = tasks[dateKey].find(t => t.isSpecial);
-          const normalTasks = tasks[dateKey].filter(t => !t.isSpecial);
+          let hasPhoto = false;
+          let photoSrc = '';
 
-          if (specialTask) {
-              html += `<div class="cal-anniversary pointer-events-none">${specialTask.title}</div>`;
-          }
-          
-          if (normalTasks.length > 0) {
-              if (isCalendarExpanded) {
-                  normalTasks.slice(0, 3).forEach(t => {
-                      html += `<div class="cal-task-label pointer-events-none">• ${t.title}</div>`;
-                  });
-                  if(normalTasks.length > 3) html += `<div class="text-[10px] text-gray-400 mt-1 pointer-events-none">+${normalTasks.length - 3}</div>`;
-              } else {
-                  html += `<div class="cal-dots-container pointer-events-none">`;
-                  for(let j=0; j<Math.min(normalTasks.length, 3); j++) { html += `<div class="task-dot"></div>`; }
-                  if(normalTasks.length > 3) html += `<div class="task-dot" style="background:transparent; border:1px solid #a3a3a3;"></div>`;
-                  html += `</div>`;
-              }
-          }
-      }
-                 
-      if (stickers[dateKey] && stickers[dateKey].length > 0) {
-          html += `<div class="sticker-container">`;
-          stickers[dateKey].forEach((st, index) => {
-              if (st.startsWith('data:image')) {
-                  html += `<img src="${st}" class="sticker-item" title="클릭해서 떼기" onclick="event.stopPropagation(); removeSticker('${dateKey}', ${index})">`;
-              } else {
-                  html += `<div class="sticker-item !bg-transparent border-none drop-shadow-md text-[16px]" title="클릭해서 떼기" onclick="event.stopPropagation(); removeSticker('${dateKey}', ${index})">${st}</div>`;
-              }
+          // 1. 기념일 텍스트 먼저 찍기
+          tasks[dateKey].forEach(t => {
+              if (t.isSpecial) html += `<div class="cal-anniversary">${t.title}</div>`;
           });
-          html += `</div>`;
+
+          // 2. 사진이 있는지 확인
+          const firstTaskWithPhoto = tasks[dateKey].find(t => t.photoData);
+          if (firstTaskWithPhoto) {
+              hasPhoto = true;
+              photoSrc = firstTaskWithPhoto.photoData;
+          }
+
+          // 3. 사진이 있다면 사진 한장만 크게 보여주고 일정 글씨는 생략(공간 절약)
+          if (hasPhoto) {
+              html += `<img src="${photoSrc}" class="cal-photo-thumb">`;
+              const taskCount = tasks[dateKey].length;
+              if (taskCount > 1) html += `<div class="text-[9px] text-gray-500 font-bold mt-1 text-right w-full">+${taskCount-1}</div>`;
+          } else {
+              // 사진이 없으면 일반 일정 글씨로 2개까지만 표시
+              const normalTasks = tasks[dateKey].filter(t => !t.isSpecial);
+              normalTasks.slice(0, 2).forEach(t => {
+                  html += `<div class="cal-task-snippet">${t.title}</div>`;
+              });
+              if(normalTasks.length > 2) html += `<div class="text-[9px] text-gray-500 font-bold w-full text-right">+${normalTasks.length - 2}</div>`;
+          }
       }
+      
       html += `</div>`;
     }
     document.getElementById('calendar-grid').innerHTML = html;
@@ -397,181 +295,206 @@
 
   function changeMonth(step) { currentDate.setMonth(currentDate.getMonth() + step); renderCalendar(); }
   
-  function setDateAndAdd(year, month, day) {
+  // 💡 달력에서 날짜를 클릭하면 우측 게시판에 해당 내용 쫙 뿌리기!
+  function selectDate(year, month, day) {
     selectedDate = new Date(year, month, day); 
     renderCalendar();
-    renderTasks();
-    addTask();
-  }
-
-  function goToToday() { currentDate = new Date(); selectedDate = new Date(); renderCalendar(); renderTasks(); }
-
-  // === 스티커 로직 ===
-  function openStickerModal() { document.getElementById('stickerModal').classList.remove('hidden'); document.getElementById('stickerModal').classList.add('flex'); }
-  function closeStickerModal() { document.getElementById('stickerModal').classList.add('hidden'); document.getElementById('stickerModal').classList.remove('flex'); }
-  
-  function saveSticker(stickerValue) {
-      const dateKey = formatDateKey(selectedDate); if (!stickers[dateKey]) stickers[dateKey] = [];
-      if (stickers[dateKey].length >= 3) stickers[dateKey].shift();
-      stickers[dateKey].push(stickerValue); localStorage.setItem('dreamy_stickers', JSON.stringify(stickers));
-      closeStickerModal(); renderCalendar();
-  }
-  
-  function removeSticker(dateKey, index) {
-      if(stickers[dateKey]) {
-          stickers[dateKey].splice(index, 1);
-          if(stickers[dateKey].length === 0) delete stickers[dateKey];
-          localStorage.setItem('dreamy_stickers', JSON.stringify(stickers));
-          renderCalendar();
-      }
-  }
-
-  function clearStickers() {
-      const dateKey = formatDateKey(selectedDate); delete stickers[dateKey];
-      localStorage.setItem('dreamy_stickers', JSON.stringify(stickers)); closeStickerModal(); renderCalendar();
-  }
-
-  function handleImageSticker(event) {
-      const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
-      reader.onload = function(e) {
-          const img = new Image();
-          img.onload = function() {
-              const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
-              const MAX_SIZE = 80; let width = img.width; let height = img.height;
-              if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
-              canvas.width = width; canvas.height = height; ctx.drawImage(img, 0, 0, width, height);
-              saveSticker(canvas.toDataURL('image/jpeg', 0.8));
-          }; img.src = e.target.result;
-      }; reader.readAsDataURL(file);
-  }
-
-  // === 투두 로직 ===
-  function renderTasks() {
-    const dateKey = formatDateKey(selectedDate); let dayTasks = tasks[dateKey] || [];
-    dayTasks.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
-    const listEl = document.getElementById('task-list');
+    updateDetailPanel();
     
-    const month = selectedDate.getMonth() + 1;
-    const date = selectedDate.getDate();
-    document.getElementById('focus-title').innerText = (formatDateKey(new Date()) === dateKey) ? "오늘의 할 일" : `${month}월 ${date}일의 일정`;
-
-    if(dayTasks.length === 0) {
-      listEl.innerHTML = `<div class="text-center p-8 text-gray-400 text-sm border border-dashed rounded-xl cursor-pointer hover:bg-gray-50 transition" onclick="addTask()">일정이 없습니다. 달력 칸을 누르거나 버튼을 눌러 추가하세요.</div>`;
-      return;
+    // 모바일 환경일 경우, 클릭 시 스크롤을 살짝 내려서 게시판이 보이게 함
+    if(window.innerWidth < 1024) {
+        document.getElementById('detail-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-    let html = '';
-    dayTasks.forEach(task => {
-      const borderStyle = task.isSpecial ? 'border-accent/40 bg-accent/5' : 'border-gray-100 bg-white/80';
+  }
+
+  function goToToday() { 
+      currentDate = new Date(); selectedDate = new Date(); 
+      renderCalendar(); updateDetailPanel(); 
+  }
+
+  // === 💡 오른쪽 상세 게시판(커넥션) 업데이트 ===
+  function updateDetailPanel() {
+      const dateKey = formatDateKey(selectedDate);
+      const dayTasks = tasks[dateKey] || [];
       
-      html += `
-      <div class="p-4 rounded-xl shadow-sm flex items-center justify-between border ${borderStyle} hover:bg-white transition">
-        <div class="flex-1 min-w-0 pr-4">
-            ${task.time ? `<p class="text-[11px] font-bold text-primary mb-1">${task.time}</p>` : ''}
-            <p class="text-sm font-medium text-gray-800 truncate">${task.title}</p>
-        </div>
-        <div class="flex gap-2 shrink-0">
-          <button onclick="editTask('${dateKey}', ${task.id})" class="px-2.5 py-1.5 text-xs font-semibold text-gray-500 hover:text-primary bg-white/50 border border-gray-100 rounded transition">수정</button>
-          <button onclick="deleteTask('${dateKey}', ${task.id})" class="px-2.5 py-1.5 text-xs font-semibold text-gray-500 hover:text-red-500 bg-white/50 border border-gray-100 rounded transition">삭제</button>
-        </div>
-      </div>`;
-    });
-    listEl.innerHTML = html;
-  }
+      // 타이틀 업데이트 (예: 2/25 (수) 일정)
+      const dayKor = weekDaysKor[selectedDate.getDay()];
+      const isTodayStr = (formatDateKey(new Date()) === dateKey) ? "오늘의 할 일" : `${selectedDate.getMonth()+1}월 ${selectedDate.getDate()}일 (${dayKor}) 일정`;
+      document.getElementById('detail-date-title').innerText = isTodayStr;
 
-  // 투두 모달 로직
-  function openModal() { document.getElementById('taskModal').classList.remove('hidden'); document.getElementById('taskModal').classList.add('flex'); }
-  function closeModal() { document.getElementById('taskModal').classList.add('hidden'); document.getElementById('taskModal').classList.remove('flex'); }
-  
-  function addTask() { 
-      document.getElementById('modalTitle').innerText = '일정 추가'; 
-      document.getElementById('modalTaskId').value = ''; document.getElementById('modalOldDate').value = '';
-      document.getElementById('modalDate').value = formatDateKey(selectedDate); 
-      document.getElementById('modalTime').value = ''; document.getElementById('modalTitleInput').value = ''; 
-      document.getElementById('modalIsSpecial').checked = false; openModal(); 
-  }
-  
-  function editTask(dateKey, id) {
-    const task = tasks[dateKey].find(t => t.id === id); if (!task) return;
-    document.getElementById('modalTitle').innerText = '일정 수정'; document.getElementById('modalTaskId').value = task.id;
-    document.getElementById('modalOldDate').value = dateKey; document.getElementById('modalDate').value = dateKey;
-    document.getElementById('modalTime').value = task.time || ''; document.getElementById('modalTitleInput').value = task.title; 
-    document.getElementById('modalIsSpecial').checked = task.isSpecial || false; openModal();
-  }
+      const listEl = document.getElementById('detail-task-list');
+      const photoArea = document.getElementById('detail-photo-area');
+      const photoImg = document.getElementById('detail-photo-img');
+      const emojiDisplay = document.getElementById('detail-emoji-display');
 
-  function saveTaskFromModal() {
-    const title = document.getElementById('modalTitleInput').value.trim(); const time = document.getElementById('modalTime').value; 
-    const newDateKey = document.getElementById('modalDate').value; const editId = document.getElementById('modalTaskId').value;
-    const oldDateKey = document.getElementById('modalOldDate').value; const isSpecial = document.getElementById('modalIsSpecial').checked;
-    if (!title || !newDateKey) { alert("날짜와 내용을 모두 입력해주세요!"); return; }
-    
-    if (editId && oldDateKey && oldDateKey !== newDateKey) tasks[oldDateKey] = tasks[oldDateKey].filter(t => t.id != editId);
-    if (!tasks[newDateKey]) tasks[newDateKey] = [];
-    
-    if (editId && oldDateKey === newDateKey) {
-      const idx = tasks[newDateKey].findIndex(t => t.id == editId); 
-      if(idx > -1) { tasks[newDateKey][idx].title = title; tasks[newDateKey][idx].time = time; tasks[newDateKey][idx].isSpecial = isSpecial; } 
-    } else tasks[newDateKey].push({ id: Date.now(), title, time, isSpecial }); 
-    
-    localStorage.setItem('dreamy_tasks_v3', JSON.stringify(tasks)); 
-    const parts = newDateKey.split('-'); selectedDate = new Date(parts[0], parts[1]-1, parts[2]);
-    closeModal(); renderCalendar(); renderTasks();
-  }
+      // 이모지와 사진 찾기 (첫 번째로 등록된 것 기준)
+      let currentEmoji = '';
+      let currentPhoto = '';
+      dayTasks.forEach(t => {
+          if (t.emoji && !currentEmoji) currentEmoji = t.emoji;
+          if (t.photoData && !currentPhoto) currentPhoto = t.photoData;
+      });
 
-  function deleteTask(dateKey, id) {
-    if (!confirm("삭제하시겠습니까?")) return;
-    tasks[dateKey] = tasks[dateKey].filter(t => t.id !== id);
-    localStorage.setItem('dreamy_tasks_v3', JSON.stringify(tasks)); renderCalendar(); renderTasks();
-  }
+      // 이모지 표시
+      emojiDisplay.innerText = currentEmoji ? `오늘의 기분: ${currentEmoji}` : '';
 
-  // === 자유 기록장 로직 ===
-  function renderFreeJournals() {
-      const listEl = document.getElementById('free-journal-list');
-      if (freeJournals.length === 0) {
-          listEl.innerHTML = `<div class="text-center p-10 text-gray-400 text-sm border border-dashed rounded-xl cursor-pointer hover:bg-white/50 transition" onclick="addJournal()">작성된 기록이 없습니다. 자유롭게 적어보세요.</div>`;
+      // 사진 표시
+      if (currentPhoto) {
+          photoImg.src = currentPhoto;
+          photoArea.classList.remove('hidden');
+      } else {
+          photoArea.classList.add('hidden');
+          photoImg.src = '';
+      }
+
+      // 일정 리스트 렌더링
+      if(dayTasks.length === 0) {
+          listEl.innerHTML = `
+          <div class="text-center p-8 bg-white/50 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:bg-white transition flex flex-col items-center justify-center gap-2" onclick="addTask()">
+              <span class="text-3xl grayscale opacity-30">📭</span>
+              <span class="text-xs font-bold text-gray-500">일정이 비어있습니다.<br>눌러서 채워보세요!</span>
+          </div>`;
           return;
       }
+
+      // 시간순 정렬
+      dayTasks.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+
       let html = '';
-      freeJournals.forEach((j) => {
+      dayTasks.forEach(task => {
+          const borderClass = task.isSpecial ? 'border-accent bg-accent/5' : 'border-gray-100 bg-white';
+          const titleClass = task.isSpecial ? 'text-accent font-extrabold' : 'text-gray-800 font-bold';
+          
           html += `
-          <div class="bg-white/95 p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col hover:border-primary/30 transition">
-            <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
-              <span class="text-sm font-bold text-primary">${j.dateStr}</span>
-              <div class="flex gap-2 ml-4 shrink-0">
-                <button onclick="editJournal(${j.id})" class="px-2.5 py-1.5 text-xs font-semibold text-gray-500 hover:text-primary bg-gray-50 border border-gray-100 rounded transition">수정</button>
-                <button onclick="deleteJournal(${j.id})" class="px-2.5 py-1.5 text-xs font-semibold text-gray-500 hover:text-red-500 bg-gray-50 border border-gray-100 rounded transition">삭제</button>
+          <div class="p-4 rounded-xl shadow-sm border ${borderClass} hover:shadow-md transition relative group">
+              <div class="flex justify-between items-start mb-1">
+                  ${task.time ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">${task.time}</span>` : '<div></div>'}
+                  <div class="flex gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                      <button onclick="editTask('${dateKey}', ${task.id})" class="text-[10px] text-gray-400 hover:text-blue-500 bg-gray-50 px-2 py-1 rounded border border-gray-100">수정</button>
+                      <button onclick="deleteTask('${dateKey}', ${task.id})" class="text-[10px] text-gray-400 hover:text-red-500 bg-gray-50 px-2 py-1 rounded border border-gray-100">삭제</button>
+                  </div>
               </div>
-            </div>
-            <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">${j.content}</p>
+              <p class="text-sm ${titleClass} whitespace-pre-wrap leading-relaxed">${task.title}</p>
           </div>`;
       });
       listEl.innerHTML = html;
   }
-  function openJournalModal() { document.getElementById('journalModal').classList.remove('hidden'); document.getElementById('journalModal').classList.add('flex'); }
-  function closeJournalModal() { document.getElementById('journalModal').classList.add('hidden'); document.getElementById('journalModal').classList.remove('flex'); }
 
-  function addJournal() {
-      document.getElementById('jModalTitle').innerText = '기록 작성'; document.getElementById('jModalId').value = '';
-      document.getElementById('jModalDateStr').value = ''; document.getElementById('jModalContent').value = ''; openJournalModal();
+  // === 💡 통합 모달창 제어 ===
+  function openModal() { document.getElementById('taskModal').classList.remove('hidden'); document.getElementById('taskModal').classList.add('flex'); }
+  function closeModal() { document.getElementById('taskModal').classList.add('hidden'); document.getElementById('taskModal').classList.remove('flex'); }
+
+  // 모달 내 사진 미리보기 기능
+  function previewPhoto(event) {
+      const file = event.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+              // 용량 최적화를 위해 Canvas로 리사이징 (최대 폭 400px)
+              const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+              const MAX_WIDTH = 400; let width = img.width; let height = img.height;
+              if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+              canvas.width = width; canvas.height = height; ctx.drawImage(img, 0, 0, width, height);
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+              
+              document.getElementById('modalPhotoData').value = dataUrl;
+              const preview = document.getElementById('photo-preview');
+              preview.src = dataUrl; preview.classList.remove('hidden');
+              document.getElementById('remove-photo-btn').classList.remove('hidden');
+          }; img.src = e.target.result;
+      }; reader.readAsDataURL(file);
   }
-  function editJournal(id) {
-      const journalEntry = freeJournals.find(j => j.id === id); if (!journalEntry) return;
-      document.getElementById('jModalTitle').innerText = '기록 수정'; document.getElementById('jModalId').value = journalEntry.id;
-      document.getElementById('jModalDateStr').value = journalEntry.dateStr; document.getElementById('jModalContent').value = journalEntry.content; openJournalModal();
-  }
-  function saveJournalFromModal() {
-      const dateStr = document.getElementById('jModalDateStr').value.trim(); const content = document.getElementById('jModalContent').value.trim(); const editId = document.getElementById('jModalId').value;
-      if (!dateStr || !content) { alert('날짜/요일과 내용을 모두 입력해주세요!'); return; }
-      if (editId) { const idx = freeJournals.findIndex(j => j.id == editId); if (idx > -1) { freeJournals[idx].dateStr = dateStr; freeJournals[idx].content = content; } } 
-      else { freeJournals.unshift({ id: Date.now(), dateStr, content }); }
-      localStorage.setItem('dreamy_journal_v2', JSON.stringify(freeJournals)); closeJournalModal(); renderFreeJournals();
-  }
-  function deleteJournal(id) {
-      if (!confirm("이 기록을 삭제하시겠습니까?")) return;
-      freeJournals = freeJournals.filter(j => j.id !== id); localStorage.setItem('dreamy_journal_v2', JSON.stringify(freeJournals)); renderFreeJournals();
+  function removePhotoPreview() {
+      document.getElementById('modalPhotoData').value = '';
+      document.getElementById('photo-preview').classList.add('hidden');
+      document.getElementById('photo-preview').src = '';
+      document.getElementById('remove-photo-btn').classList.add('hidden');
+      document.getElementById('modalPhotoInput').value = '';
   }
 
-  // 초기화
-  renderCalendar(); renderTasks(); renderFreeJournals();
+  function setEmojiRadio(val) {
+      const radios = document.getElementsByName('emoji');
+      for(let r of radios) { if(r.value === val) r.checked = true; }
+  }
+  function getSelectedEmoji() {
+      const checked = document.querySelector('input[name="emoji"]:checked');
+      return checked ? checked.value : '';
+  }
+
+  function addTask() { 
+      document.getElementById('modalTitle').innerText = '일정 및 다꾸 추가'; 
+      document.getElementById('modalTaskId').value = ''; 
+      document.getElementById('modalDate').value = formatDateKey(selectedDate); // 현재 선택된 날짜
+      document.getElementById('modalTime').value = ''; 
+      document.getElementById('modalTitleInput').value = ''; 
+      document.getElementById('modalIsSpecial').checked = false; 
+      setEmojiRadio(''); // 이모지 리셋
+      removePhotoPreview(); // 사진 리셋
+      openModal(); 
+  }
+  
+  function editTask(dateKey, id) {
+    const task = tasks[dateKey].find(t => t.id === id); if (!task) return;
+    document.getElementById('modalTitle').innerText = '일정 수정'; 
+    document.getElementById('modalTaskId').value = task.id;
+    document.getElementById('modalDate').value = dateKey;
+    document.getElementById('modalTime').value = task.time || ''; 
+    document.getElementById('modalTitleInput').value = task.title; 
+    document.getElementById('modalIsSpecial').checked = task.isSpecial || false; 
+    setEmojiRadio(task.emoji || '');
+    
+    if(task.photoData) {
+        document.getElementById('modalPhotoData').value = task.photoData;
+        document.getElementById('photo-preview').src = task.photoData; 
+        document.getElementById('photo-preview').classList.remove('hidden');
+        document.getElementById('remove-photo-btn').classList.remove('hidden');
+    } else {
+        removePhotoPreview();
+    }
+    openModal();
+  }
+
+  function saveTaskFromModal() {
+    const title = document.getElementById('modalTitleInput').value.trim(); 
+    if (!title) { alert("내용은 필수로 적어주세요!"); return; }
+
+    const time = document.getElementById('modalTime').value; 
+    const dateKey = document.getElementById('modalDate').value; 
+    const editId = document.getElementById('modalTaskId').value;
+    const isSpecial = document.getElementById('modalIsSpecial').checked;
+    const emoji = getSelectedEmoji();
+    const photoData = document.getElementById('modalPhotoData').value;
+    
+    if (!tasks[dateKey]) tasks[dateKey] = [];
+    
+    if (editId) {
+      const idx = tasks[dateKey].findIndex(t => t.id == editId); 
+      if(idx > -1) { 
+          tasks[dateKey][idx] = { id: tasks[dateKey][idx].id, title, time, isSpecial, emoji, photoData };
+      } 
+    } else {
+      tasks[dateKey].push({ id: Date.now(), title, time, isSpecial, emoji, photoData }); 
+    }
+    
+    localStorage.setItem('dreamy_tasks_pro', JSON.stringify(tasks)); 
+    
+    closeModal(); 
+    renderCalendar(); 
+    updateDetailPanel(); // 게시판 동기화
+  }
+
+  function deleteTask(dateKey, id) {
+    if (!confirm("이 일정을 삭제하시겠습니까? (사진/이모지도 함께 지워집니다)")) return;
+    tasks[dateKey] = tasks[dateKey].filter(t => t.id !== id);
+    if(tasks[dateKey].length === 0) delete tasks[dateKey];
+    localStorage.setItem('dreamy_tasks_pro', JSON.stringify(tasks)); 
+    renderCalendar(); 
+    updateDetailPanel();
+  }
+
+  // 초기화 실행
+  goToToday(); // 오늘 날짜로 달력 렌더링 및 게시판 동기화 세팅 완료
 </script>
 </body>
 </html>
